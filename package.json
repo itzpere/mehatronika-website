@@ -17,18 +17,26 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\""
   },
   "dependencies": {
+    "@next/bundle-analyzer": "^15.1.6",
     "@payloadcms/db-postgres": "latest",
     "@payloadcms/next": "latest",
     "@payloadcms/payload-cloud": "latest",
+    "@payloadcms/plugin-seo": "latest",
     "@payloadcms/richtext-lexical": "latest",
+    "@payloadcms/storage-s3": "latest",
+    "@tailwindcss/postcss": "^4.0.3",
     "@tailwindcss/typography": "^0.5.16",
+    "@vercel/analytics": "^1.4.1",
+    "babel-plugin-react-compiler": "^19.0.0-beta-714736e-20250131",
     "cross-env": "^7.0.3",
     "graphql": "^16.8.1",
     "next": "15.1.5",
     "payload": "latest",
+    "postcss": "^8.5.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "sharp": "0.32.6",
+    "tailwind-merge": "^3.0.1",
     "tailwindcss": "^4.0.3"
   },
   "devDependencies": {
