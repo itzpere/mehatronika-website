@@ -1,11 +1,12 @@
 import type { CollectionConfig } from 'payload'
-import { anyone } from '../access/anyone'
-import { authenticated } from '../access/authenticated'
 import {
   FixedToolbarFeature,
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
+
+import { anyone } from '../access/anyone'
+import { authenticated } from '../access/authenticated'
 
 /**
  * Media collection configuration for handling image uploads

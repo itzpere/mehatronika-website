@@ -1,9 +1,18 @@
 import type { CollectionConfig } from 'payload'
+import { authenticated } from '@/access/authenticated'
 
 export const Users: CollectionConfig = {
   slug: 'users',
+  access: {
+    admin: authenticated,
+    create: authenticated,
+    delete: authenticated,
+    read: authenticated,
+    update: authenticated,
+  },
   admin: {
     useAsTitle: 'email',
+    defaultColumns: ['name', 'email'],
   },
   auth: {
     tokenExpiration: 7200, // 2 hours
@@ -14,5 +23,11 @@ export const Users: CollectionConfig = {
     maxLoginAttempts: 5,
     lockTime: 600, // 10 minutes
   },
-  fields: [],
+  fields: [
+    {
+      name: 'name',
+      type: 'text',
+    },
+  ],
+  timestamps: true,
 }
