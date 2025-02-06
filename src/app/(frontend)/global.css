@@ -12,8 +12,3 @@
     --color-error: #dc2626;         /* Crvena za greške i validacije */
     --color-warning: #eab308;       /* Žuta za upozorenja i notifikacije */
 }
-
-body {
-    background-color: var(--color-background);
-    color: var(--color-text);
-}

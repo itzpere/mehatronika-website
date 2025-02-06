@@ -17,7 +17,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
     <html lang="en">
       <body>
         <Header />
-        <main>
+        <main className="bg-background text-text">
           <Toaster />
           {children}
           <Analytics />

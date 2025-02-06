@@ -1,14 +1,14 @@
 'use client'
 import React from 'react'
 import NewsletterForm from './components/form'
-import { subscribeToNewsletter } from './utils/post'
+import { subscribeToNewsletter } from './libs/post'
 
 const MailSubscription = () => {
   const handleSubmit = async (email: string, years: number[], subscribeToBoard: boolean) => {
     const result = await subscribeToNewsletter(email, years, subscribeToBoard)
 
     if (!result.success && result.warn) {
-      // Email already subscribed case
+      // Email already subscribed case - return as success with warning
       return { success: true, warn: result.warn }
     }
 
