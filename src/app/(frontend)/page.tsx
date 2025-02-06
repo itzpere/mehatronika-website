@@ -1,9 +1,12 @@
 import React from 'react'
+import Hero from './Hero'
+import MailSubscription from './Mail'
 
 export default async function HomePage() {
   return (
     <>
-      <h1>Home Page</h1>
+      <Hero />
+      <MailSubscription />
     </>
   )
 }
