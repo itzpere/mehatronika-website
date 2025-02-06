@@ -2,7 +2,7 @@ import React from 'react'
 import './global.css'
 import { Analytics } from '@vercel/analytics/react'
 import Header from '@/Layout/Header'
-import Footer from '@/Layout/Footer'
+import { Footer } from '@/Layout/Footer'
 import { Toaster } from 'sonner'
 
 export const metadata = {
@@ -15,13 +15,11 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
 
   return (
     <html lang="en">
-      <body>
+      <body className="bg-background text-text">
         <Header />
-        <main className="bg-background text-text">
-          <Toaster />
-          {children}
-          <Analytics />
-        </main>
+        <Toaster />
+        {children}
+        <Analytics />
         <Footer />
       </body>
     </html>

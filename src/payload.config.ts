@@ -7,10 +7,12 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { seoPlugin } from '@payloadcms/plugin-seo'
+import { Footer } from '@/Layout/Footer/config'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Newsletter } from './collections/NewsLetter'
+import { Kontakt } from './collections/Kontakt'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -22,7 +24,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Newsletter],
+  collections: [Users, Media, Newsletter, Kontakt],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [
       ...defaultFeatures,
@@ -36,6 +38,7 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
+  globals: [Footer],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
