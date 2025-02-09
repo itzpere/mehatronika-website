@@ -1,0 +1,164 @@
+'use client'
+import { cn } from '@/Utils/cn'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { z } from 'zod'
+import { useState } from 'react'
+import { SiGoogle } from '@icons-pack/react-simple-icons'
+import Link from 'next/link'
+
+const loginSchema = z.object({
+  email: z.string().email('Unesite validnu email adresu'),
+  password: z.string().min(6, 'Lozinka mora imati najmanje 6 karaktera'),
+})
+
+type LoginFormData = z.infer<typeof loginSchema>
+
+interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string
+  error?: string
+  isSubmitted?: boolean
+  animationKey: number
+  rightElement?: React.ReactNode
+}
+
+function FormInput({
+  label,
+  error,
+  isSubmitted,
+  animationKey,
+  rightElement,
+  ...props
+}: FormInputProps) {
+  return (
+    <div className="grid gap-2">
+      <div className="flex items-center">
+        <Label htmlFor={props.id}>{label}</Label>
+        {rightElement}
+      </div>
+      <Input
+        {...props}
+        key={`${props.id}-${animationKey}`}
+        className={cn(
+          props.className,
+          error && 'border-error hover:border-error',
+          isSubmitted && error && 'animate-shake',
+        )}
+      />
+      {error && <p className="text-sm text-error">{error}</p>}
+    </div>
+  )
+}
+
+export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+  const [errors, setErrors] = useState<Partial<LoginFormData>>({})
+  const [formData, setFormData] = useState<LoginFormData>({ email: '', password: '' })
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [animationKey, setAnimationKey] = useState(0)
+
+  const validateField = (field: keyof LoginFormData, value: string) => {
+    const result = loginSchema.shape[field].safeParse(value)
+    if (!result.success) {
+      setErrors((prev) => ({ ...prev, [field]: result.error.issues[0].message }))
+    } else {
+      setErrors((prev) => ({ ...prev, [field]: undefined }))
+    }
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitted(true)
+    setAnimationKey((prev) => prev + 1)
+    const result = loginSchema.safeParse(formData)
+
+    if (!result.success) {
+      const fieldErrors: Partial<LoginFormData> = {}
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          fieldErrors[issue.path[0] as keyof LoginFormData] = issue.message
+        }
+      })
+      setErrors(fieldErrors)
+      return
+    }
+
+    setErrors({})
+    // Handle successful validation
+  }
+
+  const handleChange = (field: keyof LoginFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }))
+  }
+
+  const inputFields = [
+    {
+      id: 'email',
+      label: 'Email adresa',
+      type: 'email',
+      placeholder: 'm@example.com',
+    },
+    {
+      id: 'password',
+      label: 'Lozinka',
+      type: 'password',
+      rightElement: (
+        <a href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
+          Zaboravili ste lozinku?
+        </a>
+      ),
+    },
+  ]
+
+  return (
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">Prijava</CardTitle>
+          <CardDescription>Ulogujte se na svoj nalog</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {inputFields.map(({ id, label, type, placeholder, rightElement }) => (
+              <FormInput
+                key={id}
+                id={id}
+                label={label}
+                type={type}
+                placeholder={placeholder}
+                value={formData[id as keyof LoginFormData]}
+                onChange={handleChange(id as keyof LoginFormData)}
+                onBlur={() =>
+                  validateField(id as keyof LoginFormData, formData[id as keyof LoginFormData])
+                }
+                error={errors[id as keyof LoginFormData]}
+                isSubmitted={isSubmitted}
+                animationKey={animationKey}
+                rightElement={rightElement}
+              />
+            ))}
+
+            <div className="space-y-4">
+              <Button type="submit" className="w-full">
+                Prijavi se
+              </Button>
+              <Button variant="outline" className="w-full">
+                <SiGoogle className="mr-2" size={24} />
+                Google prijava
+              </Button>
+            </div>
+
+            <div className="mt-4 text-center text-sm">
+              Nemate nalog?{' '}
+              <Link href="/register" className="underline underline-offset-4">
+                Registrujte se
+              </Link>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+//FIXME: dodaj google

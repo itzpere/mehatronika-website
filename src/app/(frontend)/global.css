@@ -11,4 +11,6 @@
     --color-accent: #16a34a;        /* Sveža zelena za donacije/uspešne akcije */
     --color-error: #dc2626;         /* Crvena za greške i validacije */
     --color-warning: #eab308;       /* Žuta za upozorenja i notifikacije */
+
+    --animate-shake: shake 0.3s ease-in-out;  @keyframes shake {    0%,    100% {      transform: scale(1);    }    50% {      transform: scale(1.05);    }  }
 }

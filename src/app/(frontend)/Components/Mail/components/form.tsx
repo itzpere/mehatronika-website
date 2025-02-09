@@ -9,9 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/dialog'
-import { Input } from '@/components/input'
-import { Button } from '@/components/button'
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 interface NewsletterFormProps {
   onSubmit: (

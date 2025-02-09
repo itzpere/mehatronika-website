@@ -11,7 +11,6 @@ const SocialIcon = {
 //FIXME: dodaj automatsko ucitavanje ikonica na osnovu inputa na admin panelu
 export async function Footer() {
   const data: Footer = await getCachedGlobal('footer', 1)()
-  console.log(data)
 
   return (
     <footer className="mt-auto w-full bg-white border-t-2 border-primary/10">
