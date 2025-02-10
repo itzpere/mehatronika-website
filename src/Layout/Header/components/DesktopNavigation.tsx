@@ -6,42 +6,33 @@ import Link from 'next/link'
 interface NavLinkProps {
   href: string
   label: string
-  isActive: boolean
 }
 
-const NavLink = ({ href, label, isActive }: NavLinkProps) => (
+const NavLink = ({ href, label }: NavLinkProps) => (
   <Link
     href={href}
-    className={`rounded-xl px-3 py-2 font-semibold transition-colors text-gray-900 duration-200 hover:bg-gray-100  ${
-      isActive ? 'text-blue-700 dark:text-blue-500' : 'text-gray-900'
-    }`}
+    className="group relative px-3 py-2 text-base font-medium text-gray-600 
+    transition-colors duration-300 hover:text-primary"
   >
     {label}
+    <span
+      className="absolute bottom-0 left-0 h-0.5 w-full origin-left scale-x-0 
+      bg-primary transition-transform duration-300 group-hover:scale-x-100"
+    />
   </Link>
 )
 
-interface DesktopNavigationProps {
-  navItems: readonly { label: string; href: string }[]
-  pathname: string
+interface NavItem {
+  id: string
+  label: string
+  href: string
 }
 
-const DesktopNavigation = ({ navItems, pathname }: DesktopNavigationProps) => {
+const DesktopNavigation = ({ navItems }: { navItems: NavItem[] }) => {
   return (
-    <div
-      className="hidden md:flex md:space-x-8"
-      style={{
-        willChange: 'transform',
-        transform: 'translateZ(0)',
-        contain: 'layout style',
-      }}
-    >
+    <div className="hidden md:flex md:items-center md:gap-6">
       {navItems.map((item) => (
-        <NavLink
-          key={item.href}
-          href={item.href}
-          label={item.label}
-          isActive={pathname === item.href}
-        />
+        <NavLink key={item.href} href={item.href} label={item.label} />
       ))}
     </div>
   )

@@ -2,38 +2,39 @@
 
 import React, { useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { createPortal } from 'react-dom'
 import DesktopNavigation from './DesktopNavigation'
-import { MobileMenuButton, MobileMenu } from './MobileMenu'
+import { MobileMenuButton } from './MobileMenu'
+import { MobileMenuPortal } from './MobileMenuPortal'
+
+interface NavItem {
+  id: string
+  label: string
+  href: string
+}
 
 interface NavigationProps {
-  navItems: ReadonlyArray<{ label: string; href: string }>
+  navItems: NavItem[]
 }
 
 const Navigation = ({ navItems }: NavigationProps) => {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
-  const toggleMenu = () => setIsOpen((prev) => !prev)
 
   return (
-    <>
-      <div className="flex items-center">
-        <DesktopNavigation navItems={navItems} pathname={pathname} />
-        <div className={`transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`}>
-          <MobileMenuButton isOpen={isOpen} onClick={toggleMenu} />
-        </div>
+    <div className="flex items-center">
+      <DesktopNavigation navItems={navItems} />
+      <div className="md:hidden">
+        {' '}
+        {/* Wrap mobile elements */}
+        <MobileMenuButton isOpen={isOpen} onClick={() => setIsOpen((prev) => !prev)} />
+        <MobileMenuPortal
+          isOpen={isOpen}
+          navItems={navItems}
+          pathname={pathname}
+          onClose={() => setIsOpen(false)}
+        />
       </div>
-      {typeof window !== 'undefined' &&
-        createPortal(
-          <MobileMenu
-            isOpen={isOpen}
-            navItems={navItems}
-            pathname={pathname}
-            onClose={() => setIsOpen(false)}
-          />,
-          document.body,
-        )}
-    </>
+    </div>
   )
 }
 

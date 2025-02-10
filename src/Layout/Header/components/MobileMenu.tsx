@@ -1,93 +1,104 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import React, { useRef, useEffect } from 'react'
+import Link from 'next/link'
+import { Menu, X } from 'lucide-react'
 
-// Mobile menu button
+interface NavItem {
+  id: string
+  label: string
+  href: string
+}
+
 interface MobileMenuProps {
-  isOpen: boolean;
-  navItems: readonly { label: string; href: string }[];
-  pathname: string;
-  onClose: () => void;
+  isOpen: boolean
+  navItems: NavItem[]
+  pathname: string
+  onClose: () => void
 }
-export const MobileMenuButton =
-  ({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) => (
-    <button
-      type="button"
-      className="inline-flex items-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 md:hidden dark:text-gray-400 dark:hover:bg-gray-700"
-      aria-expanded={isOpen}
-      onClick={onClick}
-    >
-      <span className="sr-only">Open main menu</span>
-      {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-    </button>
-  );
 
+export const MobileMenuButton = ({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) => (
+  <button
+    type="button"
+    className="group relative inline-flex h-12 w-12 items-center justify-center 
+    rounded-full text-text/80 transition-all duration-300 ease-out 
+    hover:bg-primary/5 active:scale-95 md:hidden"
+    aria-controls="mobile-menu"
+    aria-expanded={isOpen}
+    onClick={onClick}
+  >
+    <span className="sr-only">{isOpen ? 'Close menu' : 'Open menu'}</span>
+    {isOpen ? (
+      <X className="h-5 w-5 transition-all duration-300 group-hover:rotate-90" />
+    ) : (
+      <Menu className="h-5 w-5 transition-all duration-300 group-hover:scale-110" />
+    )}
+  </button>
+)
 
-// Mobile link
+// Update MobileLinkProps
 interface MobileLinkProps {
-  href: string;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
+  href: string
+  label: string
+  onClick: () => void
 }
-const MobileLink = ({ href, label, isActive, onClick }: MobileLinkProps) => (
-  <li className="my-2">
+
+// Update MobileLink component
+const MobileLink = ({ href, label, onClick }: MobileLinkProps) => (
+  <li>
     <Link
       href={href}
-      className={`block rounded-md px-4 py-2 font-bold transition-colors duration-200 hover:bg-blue-100 dark:hover:bg-blue-900 ${
-        isActive ? 'text-blue-700 dark:text-blue-500' : 'text-gray-900 dark:text-white'
-      }`}
+      className="flex items-center px-6 py-6 text-xl font-medium
+      transition-all duration-200 outline-none border-b
+      text-text/80 hover:bg-primary/5 hover:text-primary
+      active:scale-[0.98] border-gray-200"
       onClick={onClick}
     >
       {label}
     </Link>
   </li>
-);
+)
 
-// Mobile menu
+export const MobileMenu = ({ isOpen, navItems, onClose }: MobileMenuProps) => {
+  const menuRef = useRef(null)
 
-export const MobileMenu = ({ isOpen, navItems, pathname, onClose }: MobileMenuProps) => {
-  if (!isOpen) return null;
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose()
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isOpen, onClose])
 
   return (
     <>
-      {/* Base overlay without blur */}
-
-      <div className="fixed inset-0 z-40 bg-black/20 md:hidden" onClick={onClose} />
-
-      {/* Blur layer */}
-
-      <div className="pointer-events-none fixed inset-0 top-[73px] z-40 backdrop-blur-sm md:hidden" />
-
-      {/* Menu container */}
-
       <div
-        className={`fixed top-[73px] right-0 left-0 z-50 transform overflow-hidden transition-all duration-300 ease-in-out md:hidden ${
-          isOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
-        }`}
-        style={{
-          willChange: 'transform, opacity',
-          transform: 'translateZ(0)',
-          contain: 'paint layout style',
-        }}
+        className={`fixed inset-0 z-30 bg-black/40 backdrop-blur-sm transition-opacity duration-300
+        md:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        aria-hidden="true"
+        onClick={onClose}
+      />
+      <div
+        ref={menuRef}
+        id="mobile-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Main menu"
+        className={`fixed inset-y-0 right-0 z-30 w-full max-w-[300px] transform overflow-hidden
+        transition-all duration-300 ease-out md:hidden bg-background/95 shadow-lg
+        ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <ul className="mx-auto max-w-screen-xl border-y border-gray-700 bg-gray-800/80 p-4 text-center shadow-lg backdrop-blur-sm">
-          {navItems.map((item) => (
-            <MobileLink
-              key={item.href}
-              href={item.href}
-              label={item.label}
-              isActive={pathname === item.href}
-              onClick={onClose}
-            />
-          ))}
-        </ul>
+        <nav className="h-full pt-20">
+          <ul className="bg-white">
+            {navItems.map((item) => (
+              <MobileLink key={item.id} href={item.href} label={item.label} onClick={onClose} />
+            ))}
+          </ul>
+        </nav>
       </div>
     </>
-  );
-};
+  )
+}
 
-MobileMenuButton.displayName = 'MobileMenuButton';
-MobileMenu.displayName = 'MobileMenu';
+MobileMenuButton.displayName = 'MobileMenuButton'
+MobileMenu.displayName = 'MobileMenu'
