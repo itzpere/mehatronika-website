@@ -8,23 +8,26 @@ import sharp from 'sharp'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { Footer } from '@/Layout/Footer/config'
+import { Header } from '@/Layout/Header/config'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Newsletter } from './collections/NewsLetter'
 import { Kontakt } from './collections/Kontakt'
+import { SiteUsers } from './collections/SiteUsers'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
   admin: {
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Newsletter, Kontakt],
+  collections: [Users, Media, Newsletter, Kontakt, SiteUsers],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [
       ...defaultFeatures,
@@ -38,7 +41,7 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  globals: [Footer],
+  globals: [Footer, Header],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || '',

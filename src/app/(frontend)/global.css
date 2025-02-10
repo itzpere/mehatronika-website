@@ -1,10 +1,10 @@
 @import "tailwindcss";
 @plugin '@tailwindcss/typography';
 @theme {
-    --color-primary: #2563eb;       /* Snažna plava (fokus na pouzdanost i tehnologiju) */
-    --color-primary-light: #93c5fd; /* Svjetlija plava za hover efekte */
-    --color-secondary: #ea580c;     /* Topla narandžasta (za akcione dugmiće) */
-    --color-secondary-light: #fdba74; /* Pastelna narandžasta */
+    --color-primary: #2563eb;       /* Strong blue (focus on reliability and technology) */
+    --color-primary-light: #93c5fd; /* Lighter blue for hover effects */
+    --color-secondary: #0d9488;     /* Teal - professional tech feel */
+    --color-secondary-light: #5eead4; /* Light teal for hover states */
     --color-background: #f8fafc;     /* Vrlo svetla sivkasta bela (pozadina) */
     --color-text: #1e293b;          /* Tamno siva za tekst (soft crna) */
     --color-border: #e2e8f0;        /* Sveta siva za granice i odvajanje sekcija */

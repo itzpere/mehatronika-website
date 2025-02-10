@@ -1,7 +1,7 @@
 import React from 'react'
 import './global.css'
 import { Analytics } from '@vercel/analytics/react'
-import Header from '@/Layout/Header'
+import { Header } from '@/Layout/Header'
 import { Footer } from '@/Layout/Footer'
 import { Toaster } from 'sonner'
 
