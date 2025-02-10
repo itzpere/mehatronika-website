@@ -1,16 +1,42 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 @theme {
-    --color-primary: #2563eb;       /* Strong blue (focus on reliability and technology) */
-    --color-primary-light: #93c5fd; /* Lighter blue for hover effects */
-    --color-secondary: #0d9488;     /* Teal - professional tech feel */
-    --color-secondary-light: #5eead4; /* Light teal for hover states */
-    --color-background: #f8fafc;     /* Vrlo svetla sivkasta bela (pozadina) */
-    --color-text: #1e293b;          /* Tamno siva za tekst (soft crna) */
-    --color-border: #e2e8f0;        /* Sveta siva za granice i odvajanje sekcija */
-    --color-accent: #16a34a;        /* Sveža zelena za donacije/uspešne akcije */
-    --color-error: #dc2626;         /* Crvena za greške i validacije */
-    --color-warning: #eab308;       /* Žuta za upozorenja i notifikacije */
+  --color-primary: #2563eb; /* Strong blue (focus on reliability and technology) */
+  --color-primary-light: #93c5fd; /* Lighter blue for hover effects */
+  --color-secondary: #0d9488; /* Teal - professional tech feel */
+  --color-secondary-light: #5eead4; /* Light teal for hover states */
+  --color-background: #f8fafc; /* Vrlo svetla sivkasta bela (pozadina) */
+  --color-text: #1e293b; /* Tamno siva za tekst (soft crna) */
+  --color-border: #e2e8f0; /* Sveta siva za granice i odvajanje sekcija */
+  --color-accent: #16a34a; /* Sveža zelena za donacije/uspešne akcije */
+  --color-error: #dc2626; /* Crvena za greške i validacije */
+  --color-warning: #eab308; /* Žuta za upozorenja i notifikacije */
 
-    --animate-shake: shake 0.3s ease-in-out;  @keyframes shake {    0%,    100% {      transform: scale(1);    }    50% {      transform: scale(1.05);    }  }
+  --animate-shake: shake 0.3s ease-in-out;
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s ease forwards;
+  animation-delay: var(--animation-delay, 0ms);
+  opacity: 0;
 }
