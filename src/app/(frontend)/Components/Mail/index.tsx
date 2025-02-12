@@ -46,7 +46,7 @@ const MailSubscription = () => {
 
           <p
             className={descriptionClasses}
-            style={isClient ? { '--animation-delay': '200ms' } : {}}
+            style={isClient ? ({ '--animation-delay': '200ms' } as React.CSSProperties) : {}}
           >
             Dobijajte obaveštenja o novim skriptama i rezultatima ispita
           </p>
@@ -54,7 +54,7 @@ const MailSubscription = () => {
 
         <div
           className={isClient ? 'animate-fade-up' : ''}
-          style={isClient ? { '--animation-delay': '400ms' } : {}}
+          style={isClient ? ({ '--animation-delay': '400ms' } as React.CSSProperties) : {}}
         >
           <NewsletterForm onSubmit={handleSubmit} />
         </div>
