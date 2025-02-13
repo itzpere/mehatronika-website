@@ -196,7 +196,7 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
                     })
 
                     await promise
-                  } catch (error) {
+                  } catch (_error) {
                     setErrors({
                       email: 'Google authentication failed',
                     })

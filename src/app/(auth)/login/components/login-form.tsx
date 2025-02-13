@@ -99,13 +99,13 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         error: 'Neuspešna prijava',
       })
 
-      const { data, error } = await promise
+      const { data: _data, error } = await promise
 
       if (error) throw error
 
       router.push('/dashboard')
       router.refresh()
-    } catch (error) {
+    } catch (_error) {
       setErrors({
         email: 'Nevazeci email',
       })

@@ -26,7 +26,7 @@ export async function subscribeToNewsletter(
       },
     })
     return { success: true, data: subscription }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to subscribe:', error)
 
     // Check for duplicate email by error message content
@@ -34,7 +34,7 @@ export async function subscribeToNewsletter(
       error.message?.includes('email') ||
       error.message?.includes('ValidationError') ||
       (error.data?.errors &&
-        error.data.errors.some((e: any) => e.field === 'email' && e.message.includes('unique')))
+        error.data.errors.some((e: { field: string; message: string }) => e.field === 'email' && e.message.includes('unique')))
     ) {
       return {
         success: false,

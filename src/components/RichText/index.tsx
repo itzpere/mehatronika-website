@@ -28,7 +28,7 @@ type Props = {
  * Supports custom blocks, images, and formatting
  */
 export default function RichText(props: Props) {
-  const { className, enableProse = true, enableGutter = true, ...rest } = props
+  const { className, enableGutter = true, ...rest } = props
 
   return (
     <RichTextWithoutBlocks
