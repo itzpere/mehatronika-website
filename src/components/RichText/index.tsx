@@ -1,6 +1,6 @@
 import { DefaultNodeTypes, SerializedLinkNode } from '@payloadcms/richtext-lexical'
 import { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
-import { cn } from '@/Utils/cn'
+import { cn } from '@/utils/cn'
 
 // Block component imports for rich text rendering
 import { YoutubeEmbed } from '@/collections/blocks/youtubeEmbed/component'

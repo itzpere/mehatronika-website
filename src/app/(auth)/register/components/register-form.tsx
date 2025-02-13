@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/Utils/cn'
+import { cn } from '@/utils/cn'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { SiGoogle } from '@icons-pack/react-simple-icons'
+import { authClient } from '@/utils/auth-client'
+import { toast } from 'sonner'
 
 const registerSchema = z
   .object({
@@ -46,7 +48,7 @@ function FormInput({ label, error, isSubmitted, animationKey, ...props }: FormIn
           isSubmitted && error && 'animate-shake',
         )}
       />
-      {error && <p className="text-sm text-error">{error}</p>}
+      {error && <p className="text-sm text-error">{}</p>}
     </div>
   )
 }
@@ -104,8 +106,29 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
       return
     }
 
-    setErrors({})
-    router.push('/login')
+    try {
+      const promise = authClient.signUp.email({
+        email: formData.email,
+        password: formData.password,
+        name: `${formData.firstName} ${formData.lastName}`,
+        callbackURL: '/',
+      })
+
+      toast.promise(promise, {
+        loading: 'Kreiranje naloga...',
+        error: 'Greška pri kreiranju naloga',
+      })
+
+      const { data: _data, error } = await promise
+      if (error) throw error
+
+      router.push('/login?message=check-email')
+    } catch (error) {
+      setErrors({
+        email: (error as Error).message,
+      })
+      setAnimationKey((prev) => prev + 1)
+    }
   }
 
   const handleChange =
@@ -155,7 +178,31 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
               <Button type="submit" className="w-full">
                 Registruj se
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  try {
+                    const promise = authClient.signIn.social({
+                      provider: 'google',
+                      callbackURL: '/dashboard',
+                      errorCallbackURL: '/register?error=auth-failed',
+                      newUserCallbackURL: '/welcome',
+                    })
+
+                    toast.promise(promise, {
+                      loading: 'Povezivanje sa Google...',
+                      error: 'Greška pri povezivanju',
+                    })
+
+                    await promise
+                  } catch (error) {
+                    setErrors({
+                      email: 'Google authentication failed',
+                    })
+                  }
+                }}
+              >
                 <SiGoogle className="mr-2" size={24} />
                 Google prijava
               </Button>
@@ -172,4 +219,4 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
     </div>
   )
 }
-//FIXME: dodaj google
+//FIXME: popravi google

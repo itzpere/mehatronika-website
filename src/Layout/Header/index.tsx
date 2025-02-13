@@ -1,4 +1,4 @@
-import { getCachedGlobal } from '@/Utils/getGlobals'
+import { getCachedGlobal } from '@/utils/getGlobals'
 import Navigation from './components/Navigation'
 import type { Header } from '@/payload-types'
 import Link from 'next/link'

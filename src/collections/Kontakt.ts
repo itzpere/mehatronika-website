@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { sendEmail } from '@/Utils/sendEmail'
+import { sendEmail } from '@/utils/sendEmail'
 
 export const Kontakt: CollectionConfig = {
   slug: 'kontakt',

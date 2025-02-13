@@ -1,5 +1,5 @@
 import React from 'react'
-import { cn } from '@/Utils/cn'
+import { cn } from '@/utils/cn'
 import RichText from '@/components/RichText'
 
 interface VideoSettings {

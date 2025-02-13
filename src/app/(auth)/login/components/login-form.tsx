@@ -1,5 +1,5 @@
 'use client'
-import { cn } from '@/Utils/cn'
+import { cn } from '@/utils/cn'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -8,6 +8,9 @@ import { z } from 'zod'
 import { useState } from 'react'
 import { SiGoogle } from '@icons-pack/react-simple-icons'
 import Link from 'next/link'
+import { authClient } from '@/utils/auth-client'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 const loginSchema = z.object({
   email: z.string().email('Unesite validnu email adresu'),
@@ -57,6 +60,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const [formData, setFormData] = useState<LoginFormData>({ email: '', password: '' })
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [animationKey, setAnimationKey] = useState(0)
+  const router = useRouter()
 
   const validateField = (field: keyof LoginFormData, value: string) => {
     const result = loginSchema.shape[field].safeParse(value)
@@ -67,7 +71,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitted(true)
     setAnimationKey((prev) => prev + 1)
@@ -84,8 +88,28 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       return
     }
 
-    setErrors({})
-    // Handle successful validation
+    try {
+      const promise = authClient.signIn.email({
+        email: formData.email,
+        password: formData.password,
+      })
+
+      toast.promise(promise, {
+        loading: 'Prijavljivanje...',
+        error: 'Neuspešna prijava',
+      })
+
+      const { data, error } = await promise
+
+      if (error) throw error
+
+      router.push('/dashboard')
+      router.refresh()
+    } catch (error) {
+      setErrors({
+        email: 'Nevazeci email',
+      })
+    }
   }
 
   const handleChange = (field: keyof LoginFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,7 +167,32 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
               <Button type="submit" className="w-full">
                 Prijavi se
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  try {
+                    const promise = authClient.signIn.social({
+                      provider: 'google',
+                      callbackURL: '/dashboard',
+                      errorCallbackURL: '/login?error=auth-failed',
+                      newUserCallbackURL: '/welcome',
+                    })
+
+                    toast.promise(promise, {
+                      loading: 'Povezivanje sa Google...',
+                      error: 'Greška pri povezivanju',
+                    })
+
+                    await promise
+                  } catch (error) {
+                    console.error('Google auth error:', error)
+                    setErrors({
+                      email: 'Google authentication failed',
+                    })
+                  }
+                }}
+              >
                 <SiGoogle className="mr-2" size={24} />
                 Google prijava
               </Button>
@@ -161,4 +210,4 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     </div>
   )
 }
-//FIXME: dodaj google
+//FIXME: popravi google

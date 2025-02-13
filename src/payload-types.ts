@@ -9,14 +9,12 @@
 export interface Config {
   auth: {
     users: UserAuthOperations;
-    'site-users': SiteUserAuthOperations;
   };
   collections: {
     users: User;
     media: Media;
     Newsletter: Newsletter;
     kontakt: Kontakt;
-    'site-users': SiteUser;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -27,7 +25,6 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     Newsletter: NewsletterSelect<false> | NewsletterSelect<true>;
     kontakt: KontaktSelect<false> | KontaktSelect<true>;
-    'site-users': SiteUsersSelect<false> | SiteUsersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -44,13 +41,9 @@ export interface Config {
     header: HeaderSelect<false> | HeaderSelect<true>;
   };
   locale: null;
-  user:
-    | (User & {
-        collection: 'users';
-      })
-    | (SiteUser & {
-        collection: 'site-users';
-      });
+  user: User & {
+    collection: 'users';
+  };
   jobs: {
     tasks: unknown;
     workflows: unknown;
@@ -85,24 +78,6 @@ export interface UserAuthOperations {
     | {
         username: string;
       };
-}
-export interface SiteUserAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
-  registerFirstUser: {
-    email: string;
-    password: string;
-  };
-  unlock: {
-    email: string;
-    password: string;
-  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -245,27 +220,6 @@ export interface Kontakt {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "site-users".
- */
-export interface SiteUser {
-  id: number;
-  email: string;
-  name?: string | null;
-  password?: string | null;
-  googleId?: string | null;
-  linkedAccounts?:
-    | {
-        provider: 'google';
-        providerId: string;
-        id?: string | null;
-      }[]
-    | null;
-  emailVerified?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -286,21 +240,12 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'kontakt';
         value: number | Kontakt;
-      } | null)
-    | ({
-        relationTo: 'site-users';
-        value: number | SiteUser;
       } | null);
   globalSlug?: string | null;
-  user:
-    | {
-        relationTo: 'users';
-        value: number | User;
-      }
-    | {
-        relationTo: 'site-users';
-        value: number | SiteUser;
-      };
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -310,15 +255,10 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user:
-    | {
-        relationTo: 'users';
-        value: number | User;
-      }
-    | {
-        relationTo: 'site-users';
-        value: number | SiteUser;
-      };
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
   key?: string | null;
   value?:
     | {
@@ -473,26 +413,6 @@ export interface KontaktSelect<T extends boolean = true> {
   name?: T;
   email?: T;
   message?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "site-users_select".
- */
-export interface SiteUsersSelect<T extends boolean = true> {
-  email?: T;
-  name?: T;
-  password?: T;
-  googleId?: T;
-  linkedAccounts?:
-    | T
-    | {
-        provider?: T;
-        providerId?: T;
-        id?: T;
-      };
-  emailVerified?: T;
   updatedAt?: T;
   createdAt?: T;
 }

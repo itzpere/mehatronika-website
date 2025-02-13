@@ -14,7 +14,6 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Newsletter } from './collections/NewsLetter'
 import { Kontakt } from './collections/Kontakt'
-import { SiteUsers } from './collections/SiteUsers'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -27,7 +26,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Newsletter, Kontakt, SiteUsers],
+  collections: [Users, Media, Newsletter, Kontakt],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [
       ...defaultFeatures,

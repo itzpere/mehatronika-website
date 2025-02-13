@@ -1,4 +1,4 @@
-import { getCachedGlobal } from '@/Utils/getGlobals'
+import { getCachedGlobal } from '@/utils/getGlobals'
 import Link from 'next/link'
 import { Instagram, Facebook, Mail } from 'lucide-react'
 import type { Footer } from '@/payload-types'
