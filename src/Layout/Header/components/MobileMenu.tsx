@@ -73,7 +73,7 @@ export const MobileMenu = ({ isOpen, navItems, onClose }: MobileMenuProps) => {
   return (
     <>
       <div
-        className={`fixed inset-0 z-30 bg-black/40 backdrop-blur-sm transition-opacity duration-300
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300
         md:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         aria-hidden="true"
         onClick={onClose}
@@ -84,7 +84,7 @@ export const MobileMenu = ({ isOpen, navItems, onClose }: MobileMenuProps) => {
         role="dialog"
         aria-modal="true"
         aria-label="Main menu"
-        className={`fixed inset-y-0 right-0 z-30 w-full max-w-[300px] transform overflow-hidden
+        className={`fixed inset-y-0 right-0 z-40 w-full max-w-[300px] transform overflow-hidden
         transition-all duration-300 ease-out md:hidden bg-background/95 shadow-lg
         ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
