@@ -40,3 +40,14 @@
   animation-delay: var(--animation-delay, 0ms);
   opacity: 0;
 }
+
+@layer utilities {
+  .animate-on-scroll {
+    opacity: 0;
+  }
+  
+  .animate-on-scroll.show {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
