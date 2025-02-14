@@ -34,6 +34,7 @@ const data = {
         {
           title: 'Skripte',
           url: '#',
+          isActive: false,
         },
         {
           title: 'Dodatni resursi',
