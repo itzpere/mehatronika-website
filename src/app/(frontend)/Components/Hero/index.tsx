@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
           <span className="bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent">
             Dobrodošli
           </span>{' '}
-          <span className="inline-block animate-shake">👋</span>
+          <span className="hidden md:inline-block animate-shake">👋</span>{' '}
         </h1>
 
         <p

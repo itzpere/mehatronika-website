@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 import { submitContactForm } from './submit'
+import { Textarea } from '@/components/ui/textarea'
 
 const Kontakt: React.FC = () => {
   const [name, setName] = useState('')
@@ -79,14 +80,14 @@ const Kontakt: React.FC = () => {
             <label htmlFor="message" className="block text-sm font-medium text-gray-700">
               Poruka
             </label>
-            <textarea
+            <Textarea
               id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Vaša poruka..."
               required
               rows={4}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full"
             />
           </div>
 
