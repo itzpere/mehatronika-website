@@ -1,17 +1,18 @@
 'use client'
 
-import { cn } from '@/utils/cn'
+import { SiGoogle } from '@icons-pack/react-simple-icons'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { z } from 'zod'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { SiGoogle } from '@icons-pack/react-simple-icons'
-import { authClient } from '@/utils/auth-client'
-import { toast } from 'sonner'
+import { authClient } from '@/lib/auth/auth-client'
+import { cn } from '@/lib/utils/cn'
+
 
 const registerSchema = z
   .object({
@@ -196,7 +197,7 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
                     })
 
                     await promise
-                  } catch (_error) {
+                  } catch {
                     setErrors({
                       email: 'Google authentication failed',
                     })

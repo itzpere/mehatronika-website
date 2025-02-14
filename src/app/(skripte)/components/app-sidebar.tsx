@@ -1,7 +1,5 @@
-import * as React from 'react'
 import { ChevronRight } from 'lucide-react'
-
-import { SearchForm } from './search-form'
+import * as React from 'react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   Sidebar,
@@ -15,6 +13,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { SearchForm } from './search-form'
 
 // TODO: dinamicno dodavanje podataka na osnovu WEBdav
 const data = {

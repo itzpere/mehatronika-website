@@ -1,5 +1,5 @@
 import React from 'react'
-import '@/app/(frontend)/global.css'
+import '@/app/(public)/global.css'
 import { Toaster } from 'sonner'
 
 export const metadata = {

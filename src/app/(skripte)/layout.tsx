@@ -1,8 +1,8 @@
-import React from 'react'
-import '@/app/(frontend)/global.css'
 import { Analytics } from '@vercel/analytics/react'
-import { Header } from '@/Layout/Header'
+import React from 'react'
+import '@/app/(public)/global.css'
 import { Toaster } from 'sonner'
+import { Header } from '@/components/layout/Header'
 
 export const metadata = {
   description: 'A blank template using Payload in a Next.js app.',

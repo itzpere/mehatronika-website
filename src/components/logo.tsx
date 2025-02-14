@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import Image from 'next/image'
+import Link from 'next/link'
 import { FC } from 'react'
 
 const Logo: FC = () => {

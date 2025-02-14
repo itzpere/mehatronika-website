@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { authClient } from '@/utils/auth-client'
+import { useEffect } from 'react'
 import { toast } from 'sonner'
+import { authClient } from '@/lib/auth/auth-client'
 
 export default function LogoutPage() {
   const router = useRouter()
