@@ -71,3 +71,7 @@ export async function Footer() {
 }
 
 Footer.displayName = 'Footer'
+//FIXME: REDOO FOOTEEER
+// tako je sranje zato sto prvo roluje tek kad skrolas na dole pa se pojavi preko necega
+// a drugo to sto global i autolayout koji je napravljen stvarno nema smisla i pravi jako glupe layout odluke
+// gde bi bilo 10x lakse da se hardcoduje ako cu sve jedno svaki put kad promenim global da se vracam dole u kod

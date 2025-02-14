@@ -23,7 +23,7 @@ import Kontakt from './Components/Kontakt'
 
 export default async function HomePage() {
   return (
-    <div className="space-y-24 md:space-y-50 py-8 md:py-12">
+    <div className="space-y-24 md:space-y-50 py-0 md:py-12">
       {/* <ServerComponent /> */}
       <Hero />
       <MailSubscription />

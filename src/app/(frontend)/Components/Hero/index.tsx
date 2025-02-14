@@ -1,11 +1,10 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
-
+import Link from 'next/link'
 const Hero: React.FC = () => {
   return (
-    <section className="relative min-h-[85vh] bg-background px-4 py-32 flex items-center">
-      {/* Background gradient effect */}
+    <section className="relative min-h-[75vh] bg-background px-4 py-32 flex items-center">
       <div
         className="absolute inset-0 opacity-40 bg-gradient-to-br from-primary/20 
         to-secondary/20 blur-3xl pointer-events-none"
@@ -29,15 +28,14 @@ const Hero: React.FC = () => {
 
         <div className="flex items-center justify-center gap-4 animate-fade-up [--animation-delay:400ms]">
           <Button
+            asChild
             size="lg"
-            className="group text-lg font-medium px-8 bg-primary hover:bg-primary/90
-            transition-all duration-300"
+            className="group text-lg font-medium px-8 bg-primary hover:bg-primary/90 transition-all duration-300"
           >
-            Skripte
-            <ArrowRight
-              className="ml-2 h-5 w-5 transition-transform duration-300 
-            group-hover:translate-x-1"
-            />
+            <Link href="/skripte">
+              Skripte
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
           </Button>
         </div>
       </div>
