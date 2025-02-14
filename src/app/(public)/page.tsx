@@ -1,8 +1,8 @@
 import React from 'react'
-import Hero from '../../components/public/Hero'
-import Kontakt from '../../components/public/Kontakt'
-import MailSubscription from '../../components/public/Mail'
-import Skripte from '../../components/public/Skripte'
+import Hero from '@/components/public/Hero'
+import Kontakt from '@/components/public/Kontakt'
+import MailSubscription from '@/components/public/Mail'
+import Skripte from '@/components/public/Skripte'
 // import { auth } from '@/utils/auth'
 // import { headers } from 'next/headers'
 
