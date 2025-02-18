@@ -18,7 +18,21 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
 
   const client = getWebDAVClient()
 
-  const files = (await client.getDirectoryContents(`/${path}`)) as FileStat[]
+  // const files = (await client.getDirectoryContents(`/${path}`)) as FileStat[]
+  const files = (await client.getDirectoryContents(`/${path}`, {
+    details: true,
+    data: `<?xml version="1.0" encoding="UTF-8"?>
+      <d:propfind xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
+          <d:prop>
+              <d:getlastmodified/>
+              <d:getcontentlength/>
+              <d:getcontenttype/>
+              <d:resourcetype/>
+              <d:getetag/>
+              <oc:fileid />  
+          </d:prop>
+      </d:propfind>`,
+  })) as unknown as FileStat[]
 
   const mdFiles = files
     .filter((file) => file.basename.endsWith('.md'))
