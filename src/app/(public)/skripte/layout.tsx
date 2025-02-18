@@ -6,23 +6,28 @@ import { Header } from '@/components/layout/Header'
 import { AppSidebar } from '@/components/skripte/app-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 
+// Force static rendering
+export const dynamic = 'force-static'
+export const revalidate = false
+export const fetchCache = 'force-cache'
+
 export const metadata = {
   description: 'A blank template using Payload in a Next.js app.',
   title: 'Skripte',
 }
-//TODO: namesti metadata
-export default async function RootLayout(props: { children: React.ReactNode }) {
-  const { children } = props
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-background text-text">
+    <html lang="en" className="overflow-hidden">
+      <body className="bg-background text-text h-screen flex flex-col">
         <Header className="border-b border-black" />
         <Toaster />
-        <div className="top-20">
+        <div className="flex-1 overflow-hidden">
           <SidebarProvider>
             <AppSidebar />
-            <SidebarInset>{children}</SidebarInset>
+            <SidebarInset>
+              <React.Suspense>{children}</React.Suspense>
+            </SidebarInset>
           </SidebarProvider>
         </div>
         <Analytics />

@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,31 +11,37 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 
 interface HeaderProps {
-  href?: string
-  linkName?: string
-  pageName?: string
+  path?: string
 }
 
-export function Header({ href, linkName, pageName }: HeaderProps) {
+export function Header({ path }: HeaderProps) {
+  const segments = path?.split('/').filter(Boolean) || []
+
   return (
-    <header className="sticky top-0 flex z-40 bg-background/95 backdrop-blur h-16 items-center gap-2 border-b px-4 shadow-sm">
+    <header className="sticky top-0 flex z-50 bg-background border-b px-4 shadow-sm h-16 items-center gap-2">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <Breadcrumb>
         <BreadcrumbList>
-          {href && linkName && (
-            <>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href={href}>{linkName}</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-            </>
-          )}
-          {pageName && (
-            <BreadcrumbItem>
-              <BreadcrumbPage>{pageName}</BreadcrumbPage>
-            </BreadcrumbItem>
-          )}
+          <BreadcrumbItem className="hidden md:block">
+            <BreadcrumbLink href="/skripte">Skripte</BreadcrumbLink>
+          </BreadcrumbItem>
+
+          {segments.map((segment, index) => {
+            const href = `/skripte/${segments.slice(0, index + 1).join('/')}`
+            return (
+              <React.Fragment key={segment}>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem className="hidden md:block">
+                  {index === segments.length - 1 ? (
+                    <BreadcrumbPage>{decodeURIComponent(segment)}</BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink href={href}>{decodeURIComponent(segment)}</BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+              </React.Fragment>
+            )
+          })}
         </BreadcrumbList>
       </Breadcrumb>
     </header>

@@ -17,6 +17,15 @@
   --color-warning: #eab308; /* Žuta za upozorenja i notifikacije */
 
   --animate-shake: shake 0.3s ease-in-out;
+
+  --color-sidebar-background: #fafafa;
+  --color-sidebar-foreground: #3f3f46;
+  --color-sidebar-primary: #18181b;
+  --color-sidebar-primary-foreground: #fafafa;
+  --color-sidebar-accent: #f4f4f5;
+  --color-sidebar-accent-foreground: #18181b;
+  --color-sidebar-border: #e5e7eb;
+  --color-sidebar-ring: #3b82f6;
 }
 @keyframes shake {
   0%,
@@ -55,7 +64,6 @@
     transform: translate(0, 0);
   }
 }
-
 /* :root {
   --background: hsl(0 0% 100%);
   --foreground: hsl(0 0% 3.9%);

@@ -28,8 +28,10 @@ interface NavItem {
   url: string
   items?: NavItem[]
 }
-
-async function getWebDavStructure(path: string = '/Mehatronika'): Promise<NavItem[]> {
+// env folder for sidebar
+async function getWebDavStructure(
+  path: string = `${process.env.WEBDAV_DEFAULT_FOLDER}`,
+): Promise<NavItem[]> {
   const client = createClient(process.env.WEBDAV_URL ?? '', {
     username: process.env.WEBDAV_USERNAME,
     password: process.env.WEBDAV_PASSWORD,
@@ -65,7 +67,7 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
   const navMain = await getWebDavStructure()
 
   return (
-    <Sidebar {...props} className="top-20 z-40">
+    <Sidebar {...props} className="top-20 z-40 py-4">
       <SidebarHeader>
         <SearchForm />
       </SidebarHeader>
