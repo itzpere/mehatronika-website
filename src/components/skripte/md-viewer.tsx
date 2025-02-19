@@ -6,3 +6,4 @@ export function MDViewer({ content }: { content: string }) {
     </ReactMarkdown>
   )
 }
+// FIXME: implement viewer

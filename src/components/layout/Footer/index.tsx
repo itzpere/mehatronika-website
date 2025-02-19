@@ -9,6 +9,7 @@ const SocialIcon = {
   email: Mail,
 }
 //FIXME: dodaj automatsko ucitavanje ikonica na osnovu inputa na admin panelu
+//FIXME: remove scrol to show
 export async function Footer() {
   const data = (await getCachedGlobal('footer', 1)()) as Footer
 

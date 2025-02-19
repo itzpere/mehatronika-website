@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header className="border-b border-black" />
         <Toaster />
         <div className="flex-1 overflow-hidden">
-          <SidebarProvider>
+          <SidebarProvider defaultOpen={true}>
             <AppSidebar />
             <SidebarInset>
               <React.Suspense>{children}</React.Suspense>

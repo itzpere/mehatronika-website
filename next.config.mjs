@@ -1,5 +1,5 @@
-import { withPayload } from '@payloadcms/next/withPayload'
 import withBundleAnalyzer from '@next/bundle-analyzer'
+import { withPayload } from '@payloadcms/next/withPayload'
 
 const analyzeBundles = withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -12,6 +12,7 @@ const nextConfig = {
   experimental: {
     reactCompiler: true,
     turbo: true,
+    useCache: true,
   },
   images: {
     remotePatterns: [
