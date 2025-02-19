@@ -68,6 +68,11 @@ export const isImage = (filename: string) => {
   return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')
 }
 
+export const isVideo = (filename: string) => {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  return ['mp4', 'webm', 'mov'].includes(ext || '')
+}
+
 export const getFileType = (filename: string): number => {
   if (filename.endsWith('.md')) return 0
   const ext = filename.split('.').pop()?.toLowerCase()

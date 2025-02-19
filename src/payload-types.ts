@@ -69,6 +69,7 @@ export interface Config {
     media: Media;
     Newsletter: Newsletter;
     kontakt: Kontakt;
+    files: File;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -79,6 +80,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     Newsletter: NewsletterSelect<false> | NewsletterSelect<true>;
     kontakt: KontaktSelect<false> | KontaktSelect<true>;
+    files: FilesSelect<false> | FilesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -274,6 +276,22 @@ export interface Kontakt {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "files".
+ */
+export interface File {
+  id: number;
+  fileId: number;
+  likes?: number | null;
+  author?: string | null;
+  fileName?: string | null;
+  modified?: string | null;
+  size?: number | null;
+  location?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -294,6 +312,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'kontakt';
         value: number | Kontakt;
+      } | null)
+    | ({
+        relationTo: 'files';
+        value: number | File;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -467,6 +489,21 @@ export interface KontaktSelect<T extends boolean = true> {
   name?: T;
   email?: T;
   message?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "files_select".
+ */
+export interface FilesSelect<T extends boolean = true> {
+  fileId?: T;
+  likes?: T;
+  author?: T;
+  fileName?: T;
+  modified?: T;
+  size?: T;
+  location?: T;
   updatedAt?: T;
   createdAt?: T;
 }

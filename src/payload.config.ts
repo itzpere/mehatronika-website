@@ -9,6 +9,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { Footer } from '@/components/layout/Footer/config'
 import { Header } from '@/components/layout/Header/config'
+import { Files } from './content/collections/Files'
 import { Kontakt } from './content/collections/Kontakt'
 import { Media } from './content/collections/Media'
 import { Newsletter } from './content/collections/NewsLetter'
@@ -25,7 +26,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Newsletter, Kontakt],
+  collections: [Users, Media, Newsletter, Kontakt, Files],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [
       ...defaultFeatures,

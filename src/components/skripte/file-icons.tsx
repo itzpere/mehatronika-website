@@ -14,12 +14,17 @@ import {
   LayersIcon,
   BoxIcon,
   ShipIcon,
+  VideoIcon,
 } from 'lucide-react'
 
 export const getFileIcon = (filename: string) => {
   const ext = filename.split('.').pop()?.toLowerCase()
 
   switch (ext) {
+    case 'mp4':
+    case 'webm':
+    case 'mov':
+      return <VideoIcon className="w-5 h-5 mr-2 text-blue-500" />
     case 'pdf':
       return <FileTextIcon className="w-5 h-5 mr-2 text-red-500" />
     case 'doc':
