@@ -5,6 +5,8 @@ import { useInView } from 'react-intersection-observer'
 import NewsletterForm from './components/form'
 import { subscribeToNewsletter } from './libs/post'
 
+//FIXME: implement user auth functionality to link to user acc
+
 const MailSubscription = () => {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 })
 

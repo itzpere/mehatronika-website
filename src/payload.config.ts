@@ -14,6 +14,7 @@ import { Kontakt } from './content/collections/Kontakt'
 import { Media } from './content/collections/Media'
 import { Newsletter } from './content/collections/NewsLetter'
 import { Users } from './content/collections/Users'
+import { user, session, account, verification } from './content/schema'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -45,6 +46,20 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
+    beforeSchemaInit: [
+      ({ schema }) => {
+        return {
+          ...schema,
+          tables: {
+            ...schema.tables,
+            user,
+            session,
+            account,
+            verification,
+          },
+        }
+      },
+    ],
   }),
   sharp,
   plugins: [

@@ -14,7 +14,7 @@ export async function Footer() {
 
   return (
     <footer className="mt-auto w-full bg-white border-t-2 border-primary/10">
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-6 py-4">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-3">
           {data.columns.map((column, index) => (
             <div key={index}>
@@ -62,7 +62,7 @@ export async function Footer() {
           </div>
         </div>
 
-        <hr className="my-6 border-gray-200" />
+        <hr className="my-2 border-gray-200" />
 
         <div className="text-center text-sm text-gray-600">{data.copyright}</div>
       </div>

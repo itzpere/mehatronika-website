@@ -9,6 +9,7 @@ export function ScriptsContent() {
       <div className="space-y-4">
         <span className="text-5xl font-bold">
           {' '}
+          {/* TODO: implement number of files to count */}
           <Counter end={156} />
         </span>
         <h2 className="text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent">
