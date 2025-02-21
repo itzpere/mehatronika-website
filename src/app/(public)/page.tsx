@@ -1,5 +1,6 @@
 import React from 'react'
 import { Footer } from '@/components/layout/Footer'
+import { Header } from '@/components/layout/Header'
 import CallToAction from '@/components/public/CallToAction'
 import Hero from '@/components/public/Hero'
 import Kontakt from '@/components/public/Kontakt'
@@ -26,7 +27,8 @@ import Skripte from '@/components/public/Skripte'
 export default async function HomePage() {
   return (
     <div className="space-y-24 md:space-y-50 py-0 md:py-12">
-      {/* <ServerComponent /> */}
+      <Header />
+      <div className="h-10" />
       <Hero />
       <MailSubscription />
       <Skripte />

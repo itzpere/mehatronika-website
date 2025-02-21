@@ -7,7 +7,6 @@ import ReactMarkdown from 'react-markdown'
 import { Document, Page, pdfjs } from 'react-pdf'
 import remarkGfm from 'remark-gfm'
 
-// Initialize PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -24,17 +23,15 @@ export function FileViewer({ path, filename, extension }: FileViewerProps) {
   const [markdown, setMarkdown] = useState('')
 
   const shareId = process.env.NEXT_PUBLIC_NEXTCLOUD_SHARE_ID
-  // Remove Mehatronika prefix and filename from path
   const cleanPath = path
     .replace(/^\//, '')
     .replace(/^Mehatronika\//, '')
     .replace(new RegExp(`${filename}$`), '')
 
   const fileUrl = `https://cloud.itzpere.com/s/${shareId}/download?path=/${encodeURIComponent(cleanPath)}/${filename}`
-  // TODO:testiraj jos malo da li url formating radi kako treba
   // TODO:dodaj jos file ektenzija
 
-  const { ref, inView } = useInView({
+  const { ref, inView: _inView } = useInView({
     threshold: 0.1,
     triggerOnce: true,
   })

@@ -262,7 +262,7 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
                       ) : (
                         getFileIcon(file.basename)
                       )}
-                      <span className="flex-1">{file.basename}</span>
+                      <span className="flex-1 line-clamp-2">{file.basename}</span>
                     </Link>
 
                     <div className="flex items-center gap-2">
