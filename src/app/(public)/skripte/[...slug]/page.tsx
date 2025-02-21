@@ -1,5 +1,4 @@
 import { FolderIcon, FileTextIcon, VideoIcon } from 'lucide-react'
-import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -17,7 +16,7 @@ import {
   getFileType,
   type FileStat,
 } from '@/components/skripte/file-utils'
-import { Header } from '@/components/skripte/header'
+import { FileViewer } from '@/components/skripte/file-viewer'
 import { LikeButton } from '@/components/skripte/like-button'
 import { ReportDialog } from '@/components/skripte/report-dialog'
 import { mdFileInfo } from '@/components/skripte/top-md-files'
@@ -78,13 +77,15 @@ async function likeFile(fileId: number) {
       data: { likes: currentLikes + 1 },
     })
   }
-
-  revalidatePath('/skripte')
 }
 
-export default async function Page({ params }: { params: Promise<{ slug: string[] }> }) {
-  const resolvedParams = await params
-  const path = resolvedParams.slug.map((segment) => decodeURIComponent(segment)).join('/')
+function isFile(path: string) {
+  return path.split('/').pop()?.includes('.') || false
+}
+
+export default async function Page(props: { params: Promise<{ slug: string[] }> }) {
+  const params = await props.params
+  const path = params.slug.map((segment) => decodeURIComponent(segment)).join('/')
 
   const client = getWebDAVClient()
 
@@ -133,6 +134,19 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
     }
   }
 
+  // Check if path is a file
+  if (isFile(path)) {
+    const extension = files[0].basename.split('.').pop()?.toLowerCase()
+
+    return (
+      <FileViewer
+        path={files[0].filename}
+        filename={files[0].basename}
+        extension={extension || ''}
+      />
+    )
+  }
+
   const mdFiles = files
     .filter((file) => file.basename.endsWith('.md'))
     .sort((a, b) => a.basename.localeCompare(b.basename))
@@ -165,10 +179,9 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
   const likedFiles = JSON.parse(cookieStore.get('likedFiles')?.value || '[]')
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <Header path={path} />
+    <div className="h-full overflow-y-auto">
       <CommentsProvider>
-        <div className="flex-1 overflow-y-auto ">
+        <div className="flex-1">
           {knownMdFiles.length > 0 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">

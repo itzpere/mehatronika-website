@@ -1,4 +1,5 @@
 import React from 'react'
+import { Footer } from '@/components/layout/Footer'
 import CallToAction from '@/components/public/CallToAction'
 import Hero from '@/components/public/Hero'
 import Kontakt from '@/components/public/Kontakt'
@@ -31,6 +32,7 @@ export default async function HomePage() {
       <Skripte />
       <CallToAction />
       <Kontakt />
+      <Footer />
     </div>
   )
 }

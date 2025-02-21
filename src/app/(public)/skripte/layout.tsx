@@ -1,9 +1,8 @@
-import { Analytics } from '@vercel/analytics/react'
 import React from 'react'
 import '@/app/(public)/global.css'
-import { Toaster } from 'sonner'
 import { Header } from '@/components/layout/Header'
 import { AppSidebar } from '@/components/skripte/app-sidebar'
+import { BreadcrumbHeader } from '@/components/skripte/header'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 
 // Force static rendering
@@ -16,22 +15,26 @@ export const metadata = {
   title: 'Skripte',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function ScriptsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="overflow-hidden">
-      <body className="bg-background text-text h-screen flex flex-col">
-        <Header className="border-b border-black" />
-        <Toaster />
-        <div className="flex-1 overflow-hidden">
-          <SidebarProvider defaultOpen={true}>
-            <AppSidebar />
-            <SidebarInset>
+    <div className="h-screen flex flex-col overflow-hidden">
+      <Header className="flex-none" />
+      <div className="flex-1 min-h-0">
+        {' '}
+        {/* Added min-h-0 */}
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset className="h-full">
+            <BreadcrumbHeader className="fixed top-20 z-10 bg-background w-full" />
+            <div className="h-[calc(100vh-1rem)] pt-40">
+              {' '}
+              {/* Added fixed height container */}
               <React.Suspense>{children}</React.Suspense>
-            </SidebarInset>
-          </SidebarProvider>
-        </div>
-        <Analytics />
-      </body>
-    </html>
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </div>
+    </div>
   )
 }
+//FIXME: scrol bar ide preko headera i headera bread crumb

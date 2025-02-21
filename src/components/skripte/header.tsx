@@ -1,3 +1,6 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
 import React from 'react'
 import {
   Breadcrumb,
@@ -9,25 +12,23 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils/cn'
 
 interface HeaderProps {
-  path?: string
+  className?: string
 }
 
-export function Header({ path }: HeaderProps) {
-  const segments = path?.split('/').filter(Boolean) || []
-
+export function BreadcrumbHeader({ className }: HeaderProps) {
+  const pathname = usePathname()
+  const cleanPath = pathname?.split('/').slice(2).join('/') || ''
+  const segments = cleanPath.split('/').filter(Boolean)
   return (
-    <header className="sticky top-0.5 flex flex-col z-50 bg-background border-b px-4 shadow-sm">
+    <div className={cn('flex flex-col z-50 bg-background border-b px-4 shadow-sm', className)}>
       <div className="h-16 flex items-center gap-2">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="/skripte">Skripte</BreadcrumbLink>
-            </BreadcrumbItem>
-
             {segments.map((segment, index) => {
               const href = `/skripte/${segments.slice(0, index + 1).join('/')}`
               return (
@@ -46,6 +47,6 @@ export function Header({ path }: HeaderProps) {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-    </header>
+    </div>
   )
 }

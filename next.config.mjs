@@ -11,7 +11,11 @@ const nextConfig = {
   // Your Next.js config here
   experimental: {
     reactCompiler: true,
-    turbo: true,
+    turbo: {
+      resolveAlias: {
+        canvas: './empty-module.ts',
+      },
+    },
   },
   images: {
     remotePatterns: [

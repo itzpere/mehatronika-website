@@ -7,15 +7,13 @@ export const metadata = {
   title: 'Login',
 }
 
-export default async function RootLayout(props: { children: React.ReactNode }) {
+export default async function AuthLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
-    <html lang="en">
-      <body className="bg-background text-text">
-        {children}
-        <Toaster />
-      </body>
-    </html>
+    <div>
+      {children}
+      <Toaster />
+    </div>
   )
 }
