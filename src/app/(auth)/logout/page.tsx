@@ -5,11 +5,6 @@ import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { authClient } from '@/lib/auth/auth-client'
 
-export const metadata = {
-  description: 'Stranica za prijavljivanje i registraciju',
-  title: 'Logout',
-}
-
 export default function LogoutPage() {
   const router = useRouter()
 
