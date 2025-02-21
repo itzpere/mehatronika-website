@@ -1,5 +1,6 @@
+import { Analytics } from '@vercel/analytics/react'
 import React from 'react'
-import '@/app/(public)/global.css'
+import '../(public)/global.css'
 import { Toaster } from 'sonner'
 
 export const metadata = {
@@ -7,13 +8,16 @@ export const metadata = {
   title: 'Login',
 }
 
-export default async function AuthLayout(props: { children: React.ReactNode }) {
+export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
-    <div>
-      {children}
-      <Toaster />
-    </div>
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-background text-text text-wrap">
+        <Toaster />
+        {children}
+        <Analytics />
+      </body>
+    </html>
   )
 }
