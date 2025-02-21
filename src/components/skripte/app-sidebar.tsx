@@ -1,7 +1,6 @@
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import * as React from 'react'
-import { createClient } from 'webdav'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   Sidebar,
@@ -15,6 +14,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { davClient } from '@/lib/utils/webdav'
 import { SearchForm } from './search-form'
 
 interface WebDavFile {
@@ -32,15 +32,7 @@ interface NavItem {
 async function getWebDavStructure(
   path: string = `${process.env.WEBDAV_DEFAULT_FOLDER}`,
 ): Promise<NavItem[]> {
-  const client = createClient(process.env.WEBDAV_URL ?? '', {
-    username: process.env.WEBDAV_USERNAME,
-    password: process.env.WEBDAV_PASSWORD,
-    headers: {
-      'User-Agent': 'MyWebDAVClient/1.0',
-    },
-  })
-
-  const files = (await client.getDirectoryContents(path)) as WebDavFile[]
+  const files = (await davClient.getDirectoryContents(path)) as WebDavFile[]
 
   const navItems: NavItem[] = []
 

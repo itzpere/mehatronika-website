@@ -1,5 +1,5 @@
-import { createClient, WebDAVClient } from 'webdav'
-
+import { WebDAVClient } from 'webdav'
+import { davClient } from '@/lib/utils/webdav'
 interface WebDAVProps {
   getlastmodified: string
   getcontentlength: string
@@ -23,13 +23,8 @@ export interface FileStat {
 }
 
 export const getWebDAVClient = (): WebDAVClient => {
-  const client = createClient(process.env.WEBDAV_URL ?? '', {
-    username: process.env.WEBDAV_USERNAME,
-    password: process.env.WEBDAV_PASSWORD,
-  })
-
-  const originalGetDirectoryContents = client.getDirectoryContents.bind(client)
-  client.getDirectoryContents = async (path: string, options?: any) => {
+  const originalGetDirectoryContents = davClient.getDirectoryContents.bind(davClient)
+  davClient.getDirectoryContents = async (path: string, options?: any) => {
     const response = (await originalGetDirectoryContents(path, options)) as unknown as {
       data: FileStat[]
     }
@@ -44,8 +39,7 @@ export const getWebDAVClient = (): WebDAVClient => {
 
     return files
   }
-
-  return client
+  return davClient
 }
 
 export const getFileId = (file: FileStat): number | null => {

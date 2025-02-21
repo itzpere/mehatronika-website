@@ -11,7 +11,7 @@ export const revalidate = false
 export const fetchCache = 'force-cache'
 
 export const metadata = {
-  description: 'A blank template using Payload in a Next.js app.',
+  description: 'Skripte za mehatroniku',
   title: 'Skripte',
 }
 
