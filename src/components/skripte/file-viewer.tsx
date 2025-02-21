@@ -1,11 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 import ReactMarkdown from 'react-markdown'
 import { Document, Page, pdfjs } from 'react-pdf'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import remarkGfm from 'remark-gfm'
 
 // Initialize PDF.js worker
@@ -23,8 +22,6 @@ interface FileViewerProps {
 export function FileViewer({ path, filename, extension }: FileViewerProps) {
   const [numPages, setNumPages] = useState<number>(0)
   const [markdown, setMarkdown] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
 
   const shareId = process.env.NEXT_PUBLIC_NEXTCLOUD_SHARE_ID
   // Remove Mehatronika prefix and filename from path
@@ -45,7 +42,6 @@ export function FileViewer({ path, filename, extension }: FileViewerProps) {
 
   useEffect(() => {
     if (extension === 'md') {
-      setLoading(true)
       fetch(mdUrl)
         .then((res) => {
           if (!res.ok) throw new Error('Failed to fetch markdown')
@@ -54,9 +50,7 @@ export function FileViewer({ path, filename, extension }: FileViewerProps) {
         .then(setMarkdown)
         .catch((err) => {
           console.error('Fetch error:', err)
-          setError(err.message)
         })
-        .finally(() => setLoading(false))
     }
   }, [extension, mdUrl])
 
@@ -66,16 +60,34 @@ export function FileViewer({ path, filename, extension }: FileViewerProps) {
     case 'png':
     case 'gif':
       return (
-        <div className="container mx-auto p-4">
-          <img src={fileUrl} alt={path} className="max-w-full" />
+        <div className="flex items-center justify-center p-4">
+          <div className="relative max-w-4xl w-full rounded-lg overflow-hidden shadow-lg">
+            <Image
+              src={fileUrl}
+              alt={path}
+              width={1200}
+              height={800}
+              className="w-full h-auto object-contain"
+              priority
+            />
+          </div>
         </div>
       )
-
+    // TODO: dodaj galery like image slide left right
     case 'mp4':
     case 'webm':
       return (
-        <div className="container mx-auto p-4">
-          <video src={fileUrl} controls className="w-full" />
+        <div className="flex items-center justify-center p-4">
+          <div className="relative max-w-4xl w-full rounded-lg overflow-hidden shadow-lg bg-muted">
+            <video
+              src={fileUrl}
+              controls
+              controlsList="nodownload"
+              className="w-full aspect-video"
+              preload="metadata"
+              poster={`/api/thumbnail?path=${encodeURIComponent(`${path}/${filename}`)}`}
+            />
+          </div>
         </div>
       )
 
@@ -87,6 +99,7 @@ export function FileViewer({ path, filename, extension }: FileViewerProps) {
     case 'pptx':
     case 'odt':
     case 'ods':
+      // case 'csv':
       const msViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${fileUrl}`
       console.log(`msViewerUrl: ${msViewerUrl}`)
       return (
@@ -102,11 +115,7 @@ export function FileViewer({ path, filename, extension }: FileViewerProps) {
           <Document
             file={pdfUrl}
             onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-            loading={
-              <div className="flex justify-center items-center h-32">
-                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-              </div>
-            }
+            loading={<div className="h-[1000px] w-[800px] animate-pulse bg-muted rounded" />}
             error={
               <div className="text-red-500 text-center p-4">
                 Error loading PDF. Please try downloading instead.
@@ -131,32 +140,29 @@ export function FileViewer({ path, filename, extension }: FileViewerProps) {
       )
 
     case 'md':
-      if (loading)
-        return (
-          <div className="flex-1 flex justify-center items-center">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-          </div>
-        )
-
-      if (error)
-        return (
-          <div className="flex-1 text-red-500 text-center p-4">
-            Error loading markdown: {error}. Please try downloading instead.
-          </div>
-        )
-
       return (
-        <article className="prose prose-slate max-w-none dark:prose-invert p-4 prose-headings:scroll-m-20 overflow-y-auto">
+        <article
+          className="prose prose-slate max-w-none dark:prose-invert p-8
+        prose-headings:font-bold prose-headings:tracking-tight 
+        prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl
+        prose-pre:bg-muted/50 prose-pre:border prose-pre:border-border prose-pre:p-0
+        prose-code:text-primary prose-code:font-medium
+        prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+        prose-strong:text-foreground prose-strong:font-bold
+        prose-blockquote:border-l-primary prose-blockquote:bg-muted/30 prose-blockquote:py-1
+        prose-img:rounded-lg prose-img:shadow-md
+        prose-ul:list-disc prose-ol:list-decimal
+        [&>*:first-child]:mt-0 [&>*:last-child]:mb-0
+        prose-table:border prose-table:border-border
+        prose-th:border prose-th:border-border prose-th:p-2 prose-th:bg-muted/50
+        prose-td:border prose-td:border-border prose-td:p-2
+        [&_tr:nth-child(even)]:bg-muted/30"
+        >
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
               code({ className, children, ...props }) {
-                const match = /language-(\w+)/.exec(className || '')
-                return match ? (
-                  <SyntaxHighlighter style={oneDark} language={match[1]} PreTag="div" {...props}>
-                    {String(children).replace(/\n$/, '')}
-                  </SyntaxHighlighter>
-                ) : (
+                return (
                   <code className={className} {...props}>
                     {children}
                   </code>
@@ -171,9 +177,28 @@ export function FileViewer({ path, filename, extension }: FileViewerProps) {
 
     default:
       return (
-        <div className="container mx-auto p-4">
-          <a href={fileUrl} download className="text-primary hover:underline">
-            Download File
+        <div className="h-full flex items-center justify-center">
+          <a
+            href={fileUrl}
+            download
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Download {filename}
           </a>
         </div>
       )
