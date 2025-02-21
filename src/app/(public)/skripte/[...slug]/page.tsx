@@ -139,11 +139,13 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
     const extension = files[0].basename.split('.').pop()?.toLowerCase()
 
     return (
-      <FileViewer
-        path={files[0].filename}
-        filename={files[0].basename}
-        extension={extension || ''}
-      />
+      <div className="h-full overflow-y-auto">
+        <FileViewer
+          path={files[0].filename}
+          filename={files[0].basename}
+          extension={extension || ''}
+        />
+      </div>
     )
   }
 

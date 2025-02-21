@@ -1,8 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
+import ReactMarkdown from 'react-markdown'
 import { Document, Page, pdfjs } from 'react-pdf'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+import remarkGfm from 'remark-gfm'
 
 // Initialize PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -18,10 +22,9 @@ interface FileViewerProps {
 
 export function FileViewer({ path, filename, extension }: FileViewerProps) {
   const [numPages, setNumPages] = useState<number>(0)
-  const { ref, inView } = useInView({
-    threshold: 0.1,
-    triggerOnce: true,
-  })
+  const [markdown, setMarkdown] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const shareId = process.env.NEXT_PUBLIC_NEXTCLOUD_SHARE_ID
   // Remove Mehatronika prefix and filename from path
@@ -33,6 +36,30 @@ export function FileViewer({ path, filename, extension }: FileViewerProps) {
   const fileUrl = `https://cloud.itzpere.com/s/${shareId}/download?path=/${encodeURIComponent(cleanPath)}/${filename}`
   // TODO:testiraj jos malo da li url formating radi kako treba
   // TODO:dodaj jos file ektenzija
+
+  const { ref, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: true,
+  })
+  const mdUrl = `/api/markdown?path=${encodeURIComponent(cleanPath)}&filename=${filename}`
+
+  useEffect(() => {
+    if (extension === 'md') {
+      setLoading(true)
+      fetch(mdUrl)
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to fetch markdown')
+          return res.text()
+        })
+        .then(setMarkdown)
+        .catch((err) => {
+          console.error('Fetch error:', err)
+          setError(err.message)
+        })
+        .finally(() => setLoading(false))
+    }
+  }, [extension, mdUrl])
+
   switch (extension) {
     case 'jpg':
     case 'jpeg':
@@ -101,6 +128,45 @@ export function FileViewer({ path, filename, extension }: FileViewerProps) {
             ))}
           </Document>
         </div>
+      )
+
+    case 'md':
+      if (loading)
+        return (
+          <div className="flex-1 flex justify-center items-center">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+          </div>
+        )
+
+      if (error)
+        return (
+          <div className="flex-1 text-red-500 text-center p-4">
+            Error loading markdown: {error}. Please try downloading instead.
+          </div>
+        )
+
+      return (
+        <article className="prose prose-slate max-w-none dark:prose-invert p-4 prose-headings:scroll-m-20 overflow-y-auto">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              code({ className, children, ...props }) {
+                const match = /language-(\w+)/.exec(className || '')
+                return match ? (
+                  <SyntaxHighlighter style={oneDark} language={match[1]} PreTag="div" {...props}>
+                    {String(children).replace(/\n$/, '')}
+                  </SyntaxHighlighter>
+                ) : (
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                )
+              },
+            }}
+          >
+            {markdown}
+          </ReactMarkdown>
+        </article>
       )
 
     default:
