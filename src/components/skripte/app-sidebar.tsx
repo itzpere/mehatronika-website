@@ -32,27 +32,37 @@ interface NavItem {
 async function getWebDavStructure(
   path: string = `${process.env.WEBDAV_DEFAULT_FOLDER}`,
 ): Promise<NavItem[]> {
-  const files = (await davClient.getDirectoryContents(path)) as WebDavFile[]
+  try {
+    const files = (await davClient.getDirectoryContents(path)) as WebDavFile[]
 
-  const navItems: NavItem[] = []
-
-  for (const file of files) {
-    if (file.type === 'directory') {
-      const items = await getWebDavStructure(file.filename)
-      navItems.push({
-        title: file.basename,
-        url: `/skripte/${file.filename}`,
-        items,
-      })
-    } else {
-      navItems.push({
-        title: file.basename,
-        url: `/skripte/${file.basename}`,
-      })
+    if (!files) {
+      console.error('Error: davClient.getDirectoryContents returned null or undefined')
+      return [] // Return an empty array to prevent further errors
     }
-  }
 
-  return navItems
+    const navItems: NavItem[] = []
+
+    for (const file of files) {
+      if (file.type === 'directory') {
+        const items = await getWebDavStructure(file.filename)
+        navItems.push({
+          title: file.basename,
+          url: `/skripte/${file.filename}`,
+          items,
+        })
+      } else {
+        navItems.push({
+          title: file.basename,
+          url: `/skripte/${file.basename}`,
+        })
+      }
+    }
+
+    return navItems
+  } catch (error) {
+    console.error('Error fetching WebDAV structure:', error)
+    return [] // Return an empty array to prevent further errors
+  }
 }
 
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

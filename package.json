@@ -1,7 +1,7 @@
 {
   "name": "mehatronika-website",
-  "version": "1.0.0",
-  "description": "Website mehatronike od studenata",
+  "version": "0.1",
+  "description": "Website mehatronike od studente",
   "license": "MIT",
   "type": "module",
   "scripts": {
