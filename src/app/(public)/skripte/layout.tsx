@@ -5,11 +5,6 @@ import { AppSidebar } from '@/components/skripte/app-sidebar'
 import { BreadcrumbHeader } from '@/components/skripte/header'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 
-// Force static rendering
-export const dynamic = 'force-static'
-export const revalidate = false
-export const fetchCache = 'force-cache'
-
 export const metadata = {
   title: 'Skripte',
   description: 'Skripte za mehatroniku',

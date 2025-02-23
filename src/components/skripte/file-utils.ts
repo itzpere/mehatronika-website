@@ -1,5 +1,9 @@
+import { getPayload } from 'payload'
 import { WebDAVClient } from 'webdav'
 import { publicDavClient } from '@/lib/utils/public-webdav'
+import configPromise from '@payload-config'
+import { mdFileInfo } from './top-md-files'
+
 interface WebDAVProps {
   getlastmodified: string
   getcontentlength: string
@@ -21,6 +25,10 @@ export interface FileStat {
   mime?: string
   props: WebDAVProps
 }
+
+const payload = await getPayload({
+  config: configPromise,
+})
 
 export const getWebDAVClient = (): WebDAVClient => {
   // Remove the bind and handle 'this' context inside the function
@@ -82,8 +90,90 @@ export const formatFileSize = (bytes: number): string => {
   return `${size.toFixed(1)} ${units[unitIndex]}`
 }
 
+export async function createFileInDB(file: FileStat) {
+  const fileId = file.props?.fileid
+  if (!fileId) return null
+
+  return payload.create({
+    collection: 'files',
+    data: {
+      fileId,
+      fileName: file.basename,
+      modified: file.lastmod,
+      size: file.size,
+      location: file.filename,
+    },
+  })
+}
+
+export async function checkAndCreateFiles(files: FileStat[]) {
+  const fileOps = files.map(async (file) => {
+    const fileId = file.props?.fileid
+    if (!fileId) return
+
+    const existingFile = await payload.find({
+      collection: 'files',
+      where: { fileId: { equals: fileId } },
+    })
+
+    if (existingFile.totalDocs === 0) {
+      return createFileInDB(file)
+    }
+  })
+
+  return Promise.all(fileOps)
+}
+
+const getFileType = (filename: string): number => {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  return ext ? (FILE_TYPE_MAP.get(ext) ?? 8) : 8
+}
+
+export async function processFiles(files: FileStat[]) {
+  const [mdFiles, otherFiles] = await Promise.all([
+    files.filter((file) => file.basename.endsWith('.md')),
+    files.filter((file) => !file.basename.endsWith('.md')),
+  ])
+
+  const knownMdFiles = mdFiles
+    .filter((file) => mdFileInfo.some((info) => info.filename === file.basename))
+    .map((file) => ({
+      ...file,
+      title: mdFileInfo.find((md) => md.filename === file.basename)!.title,
+      description: mdFileInfo.find((md) => md.filename === file.basename)!.description,
+    }))
+
+  const unknownMdFiles = mdFiles.filter(
+    (file) => !mdFileInfo.some((info) => info.filename === file.basename),
+  )
+
+  const [directories, regularFiles] = await Promise.all([
+    otherFiles
+      .filter((file) => file.type === 'directory')
+      .sort((a, b) => a.basename.localeCompare(b.basename)),
+    otherFiles
+      .filter((file) => file.type === 'file')
+      .sort((a, b) => {
+        const typeA = getFileType(a.basename)
+        const typeB = getFileType(b.basename)
+        return typeA === typeB ? a.basename.localeCompare(b.basename) : typeA - typeB
+      }),
+  ])
+
+  return {
+    knownMdFiles,
+    unknownMdFiles,
+    directories,
+    regularFiles,
+  }
+}
+
 const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp'])
 const VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'mov'])
+
+export function isFile(path: string) {
+  return path.split('/').pop()?.includes('.') || false
+}
 
 export const isImage = (filename: string) => {
   const ext = filename.split('.').pop()?.toLowerCase()
@@ -120,8 +210,3 @@ const FILE_TYPE_MAP = new Map([
   ['gif', 7],
   ['webp', 7],
 ])
-
-export const getFileType = (filename: string): number => {
-  const ext = filename.split('.').pop()?.toLowerCase()
-  return ext ? (FILE_TYPE_MAP.get(ext) ?? 8) : 8
-}
