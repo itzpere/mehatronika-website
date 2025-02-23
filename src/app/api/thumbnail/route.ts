@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
-import { davClient } from '@/lib/utils/webdav'
+import { publicDavClient } from '@/lib/utils/public-webdav'
 
 function isValidPath(path: string) {
   // Prevent path traversal attacks
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const file = await davClient.getFileContents(path)
+    const file = await publicDavClient.getFileContents(path)
 
     if (!(file instanceof Buffer)) {
       return new NextResponse('Invalid file', { status: 400 })
@@ -48,4 +48,3 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Error processing image', { status: 500 })
   }
 }
-//FIXME: fix images thumbnail
