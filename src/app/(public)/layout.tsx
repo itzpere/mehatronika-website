@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/react'
 import { Toaster } from 'sonner'
 // Use next/metadata for better type safety and IDE support
+import './global.css'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
