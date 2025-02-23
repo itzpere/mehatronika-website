@@ -1,7 +1,6 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import React from 'react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,10 +17,32 @@ interface HeaderProps {
   className?: string
 }
 
+function BreadcrumbSegment({
+  segment,
+  href,
+  isLast,
+}: {
+  segment: string
+  href: string
+  isLast: boolean
+}) {
+  return (
+    <>
+      <BreadcrumbSeparator />
+      <BreadcrumbItem>
+        {isLast ? (
+          <BreadcrumbPage>{decodeURIComponent(segment)}</BreadcrumbPage>
+        ) : (
+          <BreadcrumbLink href={href}>{decodeURIComponent(segment)}</BreadcrumbLink>
+        )}
+      </BreadcrumbItem>
+    </>
+  )
+}
+
 export function BreadcrumbHeader({ className }: HeaderProps) {
   const pathname = usePathname()
-  const cleanPath = pathname?.split('/').slice(2).join('/') || ''
-  const segments = cleanPath.split('/').filter(Boolean)
+  const segments = pathname?.split('/').slice(2).filter(Boolean) || []
   const currentSegment = segments[segments.length - 1]
 
   return (
@@ -30,29 +51,20 @@ export function BreadcrumbHeader({ className }: HeaderProps) {
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mr-2 h-4" />
 
-        {/* Mobile view - only current page */}
         <div className="md:hidden text-sm font-medium truncate">
           {currentSegment && decodeURIComponent(currentSegment)}
         </div>
 
-        {/* Desktop breadcrumbs */}
         <Breadcrumb className="hidden md:block">
           <BreadcrumbList>
-            {segments.map((segment, index) => {
-              const href = `/skripte/${segments.slice(0, index + 1).join('/')}`
-              return (
-                <React.Fragment key={segment}>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    {index === segments.length - 1 ? (
-                      <BreadcrumbPage>{decodeURIComponent(segment)}</BreadcrumbPage>
-                    ) : (
-                      <BreadcrumbLink href={href}>{decodeURIComponent(segment)}</BreadcrumbLink>
-                    )}
-                  </BreadcrumbItem>
-                </React.Fragment>
-              )
-            })}
+            {segments.map((segment, index) => (
+              <BreadcrumbSegment
+                key={segment}
+                segment={segment}
+                href={`/skripte/${segments.slice(0, index + 1).join('/')}`}
+                isLast={index === segments.length - 1}
+              />
+            ))}
           </BreadcrumbList>
         </Breadcrumb>
       </div>

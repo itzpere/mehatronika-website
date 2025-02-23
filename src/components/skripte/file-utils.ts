@@ -1,5 +1,5 @@
 import { WebDAVClient } from 'webdav'
-import { davClient } from '@/lib/utils/webdav'
+import { publicDavClient } from '@/lib/utils/public-webdav'
 interface WebDAVProps {
   getlastmodified: string
   getcontentlength: string
@@ -23,23 +23,48 @@ export interface FileStat {
 }
 
 export const getWebDAVClient = (): WebDAVClient => {
-  const originalGetDirectoryContents = davClient.getDirectoryContents.bind(davClient)
-  davClient.getDirectoryContents = async (path: string, options?: any) => {
-    const response = (await originalGetDirectoryContents(path, options)) as unknown as {
-      data: FileStat[]
+  // Remove the bind and handle 'this' context inside the function
+  const originalGetDirectoryContents = publicDavClient.getDirectoryContents
+
+  publicDavClient.getDirectoryContents = async (path: string, options?: any) => {
+    try {
+      const response = await originalGetDirectoryContents.call(publicDavClient, path, options)
+
+      // Check if response is an array directly
+      const responseData = Array.isArray(response) ? response : response?.data
+
+      if (!responseData) {
+        throw new Error('Invalid response format')
+      }
+
+      const files = responseData.map((file: any) => ({
+        filename: file.filename,
+        basename: file.basename,
+        type: file.type,
+        size: file.size,
+        lastmod: file.lastmod,
+        etag: file.etag,
+        mime: file.mime,
+        props: {
+          getlastmodified: file.props?.getlastmodified || '',
+          getcontentlength: file.props?.getcontentlength || '',
+          getcontenttype: file.props?.getcontenttype || '',
+          resourcetype: file.props?.resourcetype || {},
+          getetag: file.props?.getetag || '',
+          fileid: file.props?.fileid ? Number(file.props.fileid) : null,
+          tags: file.props?.tags || '',
+          displayname: file.props?.displayname || '',
+        },
+      }))
+
+      return files
+    } catch (error) {
+      console.error(`Failed to get directory contents for path: ${path}`, error)
+      throw error
     }
-
-    const files = response.data.map((file) => ({
-      ...file,
-      props: {
-        ...file.props,
-        fileid: Number(file.props?.fileid) || null,
-      },
-    }))
-
-    return files
   }
-  return davClient
+
+  return publicDavClient
 }
 
 export const getFileId = (file: FileStat): number | null => {
@@ -57,51 +82,46 @@ export const formatFileSize = (bytes: number): string => {
   return `${size.toFixed(1)} ${units[unitIndex]}`
 }
 
+const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp'])
+const VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'mov'])
+
 export const isImage = (filename: string) => {
   const ext = filename.split('.').pop()?.toLowerCase()
-  return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')
+  return ext ? IMAGE_EXTENSIONS.has(ext) : false
 }
 
 export const isVideo = (filename: string) => {
   const ext = filename.split('.').pop()?.toLowerCase()
-  return ['mp4', 'webm', 'mov'].includes(ext || '')
+  return ext ? VIDEO_EXTENSIONS.has(ext) : false
 }
 
-export const getFileType = (filename: string): number => {
-  if (filename.endsWith('.md')) return 0
-  const ext = filename.split('.').pop()?.toLowerCase()
+const FILE_TYPE_MAP = new Map([
+  ['md', 0],
+  ['pdf', 1],
+  ['doc', 2],
+  ['docx', 2],
+  ['odt', 2],
+  ['rtf', 2],
+  ['xls', 3],
+  ['xlsx', 3],
+  ['ods', 3],
+  ['csv', 3],
+  ['ppt', 4],
+  ['pptx', 4],
+  ['py', 5],
+  ['ipynb', 5],
+  ['stl', 6],
+  ['obj', 6],
+  ['3mf', 6],
+  ['fbx', 6],
+  ['jpg', 7],
+  ['jpeg', 7],
+  ['png', 7],
+  ['gif', 7],
+  ['webp', 7],
+])
 
-  switch (ext) {
-    case 'pdf':
-      return 1
-    case 'doc':
-    case 'docx':
-    case 'odt':
-    case 'rtf':
-      return 2
-    case 'xls':
-    case 'xlsx':
-    case 'ods':
-    case 'csv':
-      return 3
-    case 'ppt':
-    case 'pptx':
-      return 4
-    case 'py':
-    case 'ipynb':
-      return 5
-    case 'stl':
-    case 'obj':
-    case '3mf':
-    case 'fbx':
-      return 6
-    case 'jpg':
-    case 'jpeg':
-    case 'png':
-    case 'gif':
-    case 'webp':
-      return 7
-    default:
-      return 8
-  }
+export const getFileType = (filename: string): number => {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  return ext ? (FILE_TYPE_MAP.get(ext) ?? 8) : 8
 }

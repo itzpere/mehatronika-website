@@ -1,21 +1,25 @@
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import * as React from 'react'
+import { cache } from 'react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarMenuButton,
 } from '@/components/ui/sidebar'
-import { davClient } from '@/lib/utils/webdav'
+import { withCache } from '@/lib/utils/cache'
+import { publicDavClient } from '@/lib/utils/public-webdav'
 import { SearchForm } from './search-form'
+
+export const revalidate = 3600 // 1 hour
 
 interface WebDavFile {
   basename: string
@@ -29,44 +33,37 @@ interface NavItem {
   items?: NavItem[]
 }
 // env folder for sidebar
+
 async function getWebDavStructure(
-  path: string = `${process.env.WEBDAV_DEFAULT_FOLDER}`,
+  path: string = `${process.env.WEBDAV_DEFAULT_FOLDER || '/'}`,
 ): Promise<NavItem[]> {
-  try {
-    const files = (await davClient.getDirectoryContents(path)) as WebDavFile[]
-
-    if (!files) {
-      console.error('Error: davClient.getDirectoryContents returned null or undefined')
-      return [] // Return an empty array to prevent further errors
-    }
-
+  return withCache(`webdav:${path}`, async () => {
+    const files = (await publicDavClient.getDirectoryContents(path)) as WebDavFile[]
     const navItems: NavItem[] = []
 
-    for (const file of files) {
-      if (file.type === 'directory') {
-        const items = await getWebDavStructure(file.filename)
-        navItems.push({
-          title: file.basename,
-          url: `/skripte/${file.filename}`,
-          items,
-        })
-      } else {
-        navItems.push({
-          title: file.basename,
-          url: `/skripte/${file.basename}`,
-        })
-      }
-    }
+    await Promise.all(
+      files.map(async (file) => {
+        if (file.type === 'directory') {
+          const subitems = await getWebDavStructure(file.filename)
+          navItems.push({
+            title: file.basename,
+            url: `/skripte/${file.filename}`,
+            items: subitems,
+          })
+        }
+      }),
+    )
 
-    return navItems
-  } catch (error) {
-    console.error('Error fetching WebDAV structure:', error)
-    return [] // Return an empty array to prevent further errors
-  }
+    return navItems.sort((a, b) => a.title.localeCompare(b.title))
+  })
 }
 
+const getNavItems = cache(async () => {
+  return getWebDavStructure()
+})
+
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const navMain = await getWebDavStructure()
+  const navMain = await getNavItems()
 
   return (
     <Sidebar {...props} className="top-20 z-40 py-4">
@@ -74,38 +71,51 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
         <SearchForm />
       </SidebarHeader>
       <SidebarContent className="gap-0">
-        {navMain.map((item) => (
-          <Collapsible key={item.title} className="group/collapsible">
-            <SidebarGroup>
-              <SidebarGroupLabel
-                asChild
-                className="group/label text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              >
-                <CollapsibleTrigger>
-                  {item.title}
-                  {item.items && (
-                    <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                  )}
-                </CollapsibleTrigger>
-              </SidebarGroupLabel>
-              {item.items && (
-                <CollapsibleContent>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {item.items.map((subItem) => (
-                        <SidebarMenuItem key={subItem.title}>
-                          <SidebarMenuButton asChild>
-                            <Link href={subItem.url}>{subItem.title}</Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </CollapsibleContent>
-              )}
-            </SidebarGroup>
-          </Collapsible>
-        ))}
+        <SidebarMenu>
+          {navMain.map((item) => (
+            <div key={item.title} className="group">
+              <SidebarMenuButton disabled={true} className="text-text">
+                {item.title}
+              </SidebarMenuButton>
+              <SidebarMenuItem>
+                {item.items && item.items.length > 0 && (
+                  <SidebarMenuSub>
+                    {item.items.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <Collapsible className="group/subcollapsible w-full">
+                          <CollapsibleTrigger asChild>
+                            <SidebarMenuSubButton className="justify-between">
+                              {subItem.title}
+                              {subItem.items && subItem.items.length > 0 && (
+                                <ChevronRight className="ml-2 shrink-0 transition-transform group-data-[state=open]/subcollapsible:rotate-90" />
+                              )}
+                            </SidebarMenuSubButton>
+                          </CollapsibleTrigger>
+                          {subItem.items && subItem.items.length > 0 && (
+                            <CollapsibleContent>
+                              <SidebarMenuSub>
+                                {subItem.items.map((deepItem) => (
+                                  <SidebarMenuSubItem key={deepItem.title}>
+                                    <SidebarMenuSubButton
+                                      asChild
+                                      className="h-auto min-h-[1.75rem] py-1.5 whitespace-normal"
+                                    >
+                                      <Link href={deepItem.url}>{deepItem.title}</Link>
+                                    </SidebarMenuSubButton>
+                                  </SidebarMenuSubItem>
+                                ))}
+                              </SidebarMenuSub>
+                            </CollapsibleContent>
+                          )}
+                        </Collapsible>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                )}
+              </SidebarMenuItem>
+            </div>
+          ))}
+        </SidebarMenu>
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

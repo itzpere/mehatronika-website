@@ -1,22 +1,39 @@
 import { Analytics } from '@vercel/analytics/react'
-import React from 'react'
-import './global.css'
 import { Toaster } from 'sonner'
+// Use next/metadata for better type safety and IDE support
+import type { Metadata } from 'next'
 
-export const metadata = {
+export const metadata: Metadata = {
+  title: {
+    default: 'Mehatronika',
+    template: '%s | Mehatronika',
+  },
   description: 'Stranica za studente mehatronike',
-  title: 'Mehatronika',
+  metadataBase: new URL('https://mehatronika.xyz'), // Add your domain
+  openGraph: {
+    title: 'Mehatronika',
+    description: 'Stranica za studente mehatronike',
+    type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest',
 }
 
-export default async function RootLayout(props: { children: React.ReactNode }) {
-  const { children } = props
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="bg-background text-text text-wrap">
-        <Toaster />
-        {children}
-        <Analytics />
+    <html lang="hr" suppressHydrationWarning className="antialiased">
+      <head />
+      <body className="min-h-screen bg-background text-text font-sans selection:bg-primary/10">
+        <Toaster position="bottom-right" closeButton richColors expand theme="system" />
+        <main>{children}</main>
+        <Analytics mode="production" />
       </body>
     </html>
   )
