@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import React from 'react'
 import '@/app/(public)/global.css'
 import { Header } from '@/components/layout/Header'
 import { AppSidebar } from '@/components/skripte/app-sidebar'
@@ -26,10 +26,8 @@ export default function ScriptsLayout({ children }: { children: React.ReactNode 
       <Header className="border-b border-black" />
 
       <SidebarProvider>
-        <main className="grid grid-cols-[auto_1fr] min-h-0">
-          <Suspense fallback={<div className="w-64 animate-pulse bg-muted" />}>
-            <AppSidebar />
-          </Suspense>
+        <main className="grid grid-cols-[auto_1fr] min-h-0 w-full">
+          <AppSidebar />
 
           <SidebarInset className="relative isolate">
             <BreadcrumbHeader

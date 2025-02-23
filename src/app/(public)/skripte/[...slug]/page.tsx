@@ -1,5 +1,4 @@
 import { FolderIcon, FileTextIcon, VideoIcon } from 'lucide-react'
-import { cookies } from 'next/headers'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getPayload } from 'payload'
@@ -10,6 +9,7 @@ import {
   CommentSidebar,
 } from '@/components/skripte/comments-sidebar'
 import { getFileIcon } from '@/components/skripte/file-icons'
+import { getLikes, likeFile, getLikedFiles } from '@/components/skripte/file-likes'
 import {
   getWebDAVClient,
   isImage,
@@ -29,57 +29,6 @@ export const revalidate = 3600 // Revalidate every hour
 const payload = await getPayload({
   config: configPromise,
 })
-
-async function getLikes(fileId: number) {
-  const file = await payload.find({
-    collection: 'files',
-    where: {
-      fileId: {
-        equals: fileId,
-      },
-    },
-  })
-  return file.docs[0]?.likes || 0
-}
-
-async function likeFile(fileId: number) {
-  'use server'
-
-  const cookieStore = await cookies()
-  const likedFiles = JSON.parse(cookieStore.get('likedFiles')?.value || '[]')
-  const isLiked = likedFiles.includes(fileId)
-
-  const existingFile = await payload.find({
-    collection: 'files',
-    where: {
-      fileId: { equals: fileId },
-    },
-  })
-
-  const currentLikes = existingFile.docs[0]?.likes || 0
-
-  if (isLiked) {
-    // Unlike: Remove from liked files and decrease count
-    const newLikedFiles = likedFiles.filter((id: number) => id !== fileId)
-    cookieStore.set('likedFiles', JSON.stringify(newLikedFiles))
-
-    await payload.update({
-      collection: 'files',
-      where: { fileId: { equals: fileId } },
-      data: { likes: Math.max(currentLikes - 1, 0) },
-    })
-  } else {
-    // Like: Add to liked files and increase count
-    likedFiles.push(fileId)
-    cookieStore.set('likedFiles', JSON.stringify(likedFiles))
-
-    await payload.update({
-      collection: 'files',
-      where: { fileId: { equals: fileId } },
-      data: { likes: currentLikes + 1 },
-    })
-  }
-}
 
 function isFile(path: string) {
   return path.split('/').pop()?.includes('.') || false
@@ -203,12 +152,11 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
       )
     }
 
-    const cookieStore = await cookies()
-    const likedFiles = JSON.parse(cookieStore.get('likedFiles')?.value || '[]')
+    const likedFiles = await getLikedFiles()
 
     // Rest of the component rendering...
     return (
-      <div className="h-full overflow-y-auto">
+      <div className="h-full overflow-y-auto w-auto">
         <CommentsProvider>
           <Suspense fallback={<Loading />}>
             <div className="flex-1">

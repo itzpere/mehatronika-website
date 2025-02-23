@@ -48,3 +48,4 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Error processing image', { status: 500 })
   }
 }
+//FIXME: fix images thumbnail
