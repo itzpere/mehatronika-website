@@ -29,14 +29,18 @@ const Counter: React.FC<CounterProps> = ({ end, duration = 2000 }) => {
   })
 
   const startCounting = () => {
-    const steps = 60
-    const increment = end / steps
+    const steps = 400
     const stepTime = duration / steps
     let current = 0
+    let progress = 0
+
+    const easeOutQuart = (x: number): number => 1 - Math.pow(1 - x, 4)
 
     const timer = setInterval(() => {
-      current += increment
-      if (current >= end) {
+      progress += 1 / steps
+      current = end * easeOutQuart(progress)
+
+      if (progress >= 1) {
         setCount(end)
         clearInterval(timer)
       } else {
