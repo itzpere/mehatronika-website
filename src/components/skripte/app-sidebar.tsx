@@ -26,7 +26,6 @@ async function getNavItems() {
   const folders = await getAllFolders()
   const tree: TreeNode[] = []
 
-  // Build tree structure
   folders.forEach((folder) => {
     const path = folder.currentPath.split('/')
     let current = tree
@@ -69,38 +68,44 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
               <SidebarMenuItem>
                 {item.items && item.items.length > 0 && (
                   <SidebarMenuSub>
-                    {item.items.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <Collapsible className="group/subcollapsible w-full">
-                          <CollapsibleTrigger asChild>
-                            <SidebarMenuSubButton className="justify-between">
-                              {subItem.title}
-                              {subItem.items && subItem.items.length > 0 && (
-                                <ChevronRight className="ml-2 shrink-0 transition-transform group-data-[state=open]/subcollapsible:rotate-90" />
-                              )}
-                            </SidebarMenuSubButton>
-                          </CollapsibleTrigger>
-                          {subItem.items && subItem.items.length > 0 && (
-                            <CollapsibleContent>
-                              <SidebarMenuSub>
-                                {subItem.items.map((deepItem) => (
-                                  <SidebarMenuSubItem key={deepItem.title}>
-                                    <SidebarMenuSubButton
-                                      asChild
-                                      className="h-auto min-h-[1.75rem] py-1.5 whitespace-normal"
-                                    >
-                                      <Link href={'/skripte/' + deepItem.url}>
-                                        {deepItem.title}
-                                      </Link>
-                                    </SidebarMenuSubButton>
-                                  </SidebarMenuSubItem>
-                                ))}
-                              </SidebarMenuSub>
-                            </CollapsibleContent>
-                          )}
-                        </Collapsible>
-                      </SidebarMenuSubItem>
-                    ))}
+                    {item.items
+                      .slice()
+                      .reverse() //da bi pocelo od letnjeg semestra
+                      .map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <Collapsible className="group/subcollapsible w-full">
+                            <CollapsibleTrigger asChild>
+                              <SidebarMenuSubButton className="justify-between">
+                                {subItem.title}
+                                {subItem.items && subItem.items.length > 0 && (
+                                  <ChevronRight className="ml-2 shrink-0 transition-transform group-data-[state=open]/subcollapsible:rotate-90" />
+                                )}
+                              </SidebarMenuSubButton>
+                            </CollapsibleTrigger>
+                            {subItem.items && subItem.items.length > 0 && (
+                              <CollapsibleContent>
+                                <SidebarMenuSub>
+                                  {subItem.items
+                                    .slice()
+                                    .reverse()
+                                    .map((deepItem) => (
+                                      <SidebarMenuSubItem key={deepItem.title}>
+                                        <SidebarMenuSubButton
+                                          asChild
+                                          className="h-auto min-h-[1.75rem] py-1.5 whitespace-normal"
+                                        >
+                                          <Link href={'/skripte/' + deepItem.url}>
+                                            {deepItem.title}
+                                          </Link>
+                                        </SidebarMenuSubButton>
+                                      </SidebarMenuSubItem>
+                                    ))}
+                                </SidebarMenuSub>
+                              </CollapsibleContent>
+                            )}
+                          </Collapsible>
+                        </SidebarMenuSubItem>
+                      ))}
                   </SidebarMenuSub>
                 )}
               </SidebarMenuItem>
