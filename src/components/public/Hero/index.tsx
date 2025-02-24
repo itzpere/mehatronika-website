@@ -4,7 +4,7 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 const Hero: React.FC = () => {
   return (
-    <section className="relative min-h-[75vh] bg-background px-4 py-32 flex items-center">
+    <section className="relative min-h-[100vh] bg-background px-4 py-32 flex items-center">
       <div
         className="absolute inset-0 opacity-40 bg-gradient-to-br from-primary/20 
         to-secondary/20 blur-3xl pointer-events-none"

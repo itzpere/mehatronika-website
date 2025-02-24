@@ -1,16 +1,21 @@
-'use client'
-
 import Link from 'next/link'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 import Counter from './Counter'
 
-export function ScriptsContent() {
+export async function ScriptsContent() {
+  const payload = await getPayload({
+    config: configPromise,
+  })
+
+  const numberOfFiles = await payload.count({
+    collection: 'files',
+  })
   return (
     <div className="text-center space-y-8">
       <div className="space-y-4">
         <span className="text-5xl font-bold">
-          {' '}
-          {/* TODO: implement number of files to count */}
-          <Counter end={156} />
+          <Counter end={numberOfFiles.totalDocs} />
         </span>
         <h2 className="text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent">
           dostupnih skripti

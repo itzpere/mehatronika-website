@@ -1,5 +1,8 @@
-import { WebDAVClient } from 'webdav'
-import { davClient } from '@/lib/utils/webdav'
+import { getPayload } from 'payload'
+import type { File } from '@/payload-types'
+import configPromise from '@payload-config'
+import { mdFileInfo } from './top-md-files'
+
 interface WebDAVProps {
   getlastmodified: string
   getcontentlength: string
@@ -20,31 +23,13 @@ export interface FileStat {
   etag: string | null
   mime?: string
   props: WebDAVProps
+  title?: string
+  description?: string
 }
 
-export const getWebDAVClient = (): WebDAVClient => {
-  const originalGetDirectoryContents = davClient.getDirectoryContents.bind(davClient)
-  davClient.getDirectoryContents = async (path: string, options?: any) => {
-    const response = (await originalGetDirectoryContents(path, options)) as unknown as {
-      data: FileStat[]
-    }
-
-    const files = response.data.map((file) => ({
-      ...file,
-      props: {
-        ...file.props,
-        fileid: Number(file.props?.fileid) || null,
-      },
-    }))
-
-    return files
-  }
-  return davClient
-}
-
-export const getFileId = (file: FileStat): number | null => {
-  return file.props?.fileid || null
-}
+const payload = await getPayload({
+  config: configPromise,
+})
 
 export const formatFileSize = (bytes: number): string => {
   const units = ['B', 'KB', 'MB', 'GB']
@@ -57,51 +42,141 @@ export const formatFileSize = (bytes: number): string => {
   return `${size.toFixed(1)} ${units[unitIndex]}`
 }
 
+export async function processFiles(files: File[]) {
+  const fileGroups = files.reduce(
+    (acc, file) => {
+      if (file.name.endsWith('.md')) {
+        const mdInfo = mdFileInfo.find((info) => info.filename === file.name)
+        if (mdInfo) {
+          acc.knownMdFiles.push({ ...file, ...mdInfo })
+        } else {
+          acc.unknownMdFiles.push(file)
+        }
+      } else {
+        acc.regularFiles.push(file)
+      }
+      return acc
+    },
+    {
+      knownMdFiles: [] as (File & { title: string; description: string })[],
+      unknownMdFiles: [] as File[],
+      regularFiles: [] as File[],
+    },
+  )
+
+  fileGroups.regularFiles.sort((a, b) => {
+    const typeA = getFileType(a.name)
+    const typeB = getFileType(b.name)
+    return typeA === typeB ? a.name.localeCompare(b.name) : typeA - typeB
+  })
+
+  return fileGroups
+}
+
+export async function getAllFolders() {
+  const folders = await payload.find({
+    collection: 'folders',
+    where: {
+      deleted: { equals: false },
+    },
+    limit: 1000,
+    sort: 'currentPath',
+  })
+
+  return folders.docs
+}
+
+export async function getContentsByPath(path: string) {
+  const sanitizedPath = path?.trim() || '/'
+
+  const folder = await payload.find({
+    collection: 'folders',
+    where: {
+      ...(sanitizedPath === '/'
+        ? { uuid: { equals: 0 } }
+        : { currentPath: { equals: sanitizedPath } }),
+      deleted: { equals: false },
+    },
+    limit: 1,
+  })
+  const folderId = folder.docs[0]?.uuid
+
+  if (!folderId) {
+    console.error(`No folder found for path: ${path}`)
+    return { folders: [], files: [] }
+  }
+
+  // Get all subfolders with this parent ID
+  const folders = await payload.find({
+    collection: 'folders',
+    where: {
+      parentId: { equals: folderId },
+      deleted: { equals: false },
+    },
+    sort: 'name',
+    limit: 1000,
+  })
+
+  // Get all files with this parent ID
+  const files = await payload.find({
+    collection: 'files',
+    where: {
+      parentId: { equals: folderId },
+      deleted: { equals: false },
+    },
+    sort: 'name',
+    limit: 1000,
+  })
+
+  return {
+    folders: folders.docs,
+    files: files.docs,
+  }
+}
+
+const getFileType = (filename: string): number => {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  return ext ? (FILE_TYPE_MAP.get(ext) ?? 8) : 8
+}
+const FILE_TYPE_MAP = new Map([
+  ['md', 0],
+  ['pdf', 1],
+  ['doc', 2],
+  ['docx', 2],
+  ['odt', 2],
+  ['rtf', 2],
+  ['xls', 3],
+  ['xlsx', 3],
+  ['ods', 3],
+  ['csv', 3],
+  ['ppt', 4],
+  ['pptx', 4],
+  ['py', 5],
+  ['ipynb', 5],
+  ['stl', 6],
+  ['obj', 6],
+  ['3mf', 6],
+  ['fbx', 6],
+  ['jpg', 7],
+  ['jpeg', 7],
+  ['png', 7],
+  ['gif', 7],
+  ['webp', 7],
+])
+
+const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp'])
+const VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'mov'])
+
+export function isFile(path: string) {
+  return path.split('/').pop()?.includes('.') || false
+}
+
 export const isImage = (filename: string) => {
   const ext = filename.split('.').pop()?.toLowerCase()
-  return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')
+  return ext ? IMAGE_EXTENSIONS.has(ext) : false
 }
 
 export const isVideo = (filename: string) => {
   const ext = filename.split('.').pop()?.toLowerCase()
-  return ['mp4', 'webm', 'mov'].includes(ext || '')
-}
-
-export const getFileType = (filename: string): number => {
-  if (filename.endsWith('.md')) return 0
-  const ext = filename.split('.').pop()?.toLowerCase()
-
-  switch (ext) {
-    case 'pdf':
-      return 1
-    case 'doc':
-    case 'docx':
-    case 'odt':
-    case 'rtf':
-      return 2
-    case 'xls':
-    case 'xlsx':
-    case 'ods':
-    case 'csv':
-      return 3
-    case 'ppt':
-    case 'pptx':
-      return 4
-    case 'py':
-    case 'ipynb':
-      return 5
-    case 'stl':
-    case 'obj':
-    case '3mf':
-    case 'fbx':
-      return 6
-    case 'jpg':
-    case 'jpeg':
-    case 'png':
-    case 'gif':
-    case 'webp':
-      return 7
-    default:
-      return 8
-  }
+  return ext ? VIDEO_EXTENSIONS.has(ext) : false
 }

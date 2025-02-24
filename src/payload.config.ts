@@ -9,7 +9,9 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { Footer } from '@/components/layout/Footer/config'
 import { Header } from '@/components/layout/Header/config'
+import { FileComments } from './content/collections/FileComments'
 import { Files } from './content/collections/Files'
+import { Folders } from './content/collections/Folders'
 import { Kontakt } from './content/collections/Kontakt'
 import { Media } from './content/collections/Media'
 import { Newsletter } from './content/collections/NewsLetter'
@@ -27,7 +29,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Newsletter, Kontakt, Files],
+  collections: [Users, Media, Newsletter, Kontakt, Files, Folders, FileComments],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [
       ...defaultFeatures,
@@ -46,6 +48,7 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
+
     beforeSchemaInit: [
       ({ schema }) => {
         return {
