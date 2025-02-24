@@ -4,30 +4,27 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { CommentsProvider, CommentSidebar } from '@/components/skripte/comments-sidebar'
 import { getFileIcon } from '@/components/skripte/file-icons'
-import { getLikes, likeFile, getLikedFiles } from '@/components/skripte/file-likes'
+// import { getLikes, likeFile, getLikedFiles } from '@/components/skripte/file-likes'
 import {
   isImage,
   isVideo,
-  type FileStat,
   isFile,
   processFiles,
-  getFilesFromDB,
+  getContentsByPath,
 } from '@/components/skripte/file-utils'
 import { FileViewer } from '@/components/skripte/file-viewer'
-import { LikeButton } from '@/components/skripte/like-button'
+// import { LikeButton } from '@/components/skripte/like-button'
+import type { File as PayloadFile } from '@/payload-types'
 import Loading from './loading'
 
-export const revalidate = 3600
-
-const MdFileCard = ({
-  file,
-  path,
-}: {
-  file: FileStat & { title: string; description: string }
+interface MdFileCardProps {
+  file: PayloadFile & { title: string; description: string }
   path: string
-}) => (
+}
+
+const MdFileCard = ({ file, path }: MdFileCardProps) => (
   <Link
-    href={`/skripte/${path}/${encodeURIComponent(file.basename)}`}
+    href={`/skripte/${path}/${encodeURIComponent(file.name)}`}
     className="group p-6 rounded-lg bg-primary/5 hover:bg-primary/10 border border-primary/10 transition-all hover:shadow-md"
   >
     <div className="flex items-center gap-3 mb-3">
@@ -40,28 +37,18 @@ const MdFileCard = ({
   </Link>
 )
 
-const FileListItem = async ({
-  file,
-  path,
-  likedFiles,
-}: {
-  file: FileStat
-  path: string
-  likedFiles: number[]
-}) => {
-  const likes = await getLikes(file.props.fileid)
-
+const FileListItem = async ({ file, path }: { file: PayloadFile; path: string }) => {
   return (
     <div className="h-12 rounded-lg bg-muted/50 flex items-center px-4 hover:bg-muted/70 transition-colors group">
       <Link
-        href={`/skripte/${path}/${encodeURIComponent(file.basename)}`}
+        href={`/skripte/${path}/${encodeURIComponent(file.name)}`}
         className="flex items-center flex-1"
       >
-        {isImage(file.basename) ? (
+        {isImage(file.name) ? (
           <div className="relative w-8 h-8 mr-2 rounded overflow-hidden bg-muted">
             <Image
-              src={`/api/thumbnail?path=${encodeURIComponent(`${path}/${file.basename}`)}`}
-              alt={file.basename}
+              src={`/api/thumbnail?path=${encodeURIComponent(`${path}/${file.name}`)}`}
+              alt={file.name}
               fill
               className="object-cover"
               sizes="32px"
@@ -69,64 +56,40 @@ const FileListItem = async ({
               quality={60}
             />
           </div>
-        ) : isVideo(file.basename) ? (
+        ) : isVideo(file.name) ? (
           <VideoIcon className="w-5 h-5 mr-2 text-blue-500" />
         ) : (
-          getFileIcon(file.basename)
+          getFileIcon(file.name)
         )}
-        <span className="flex-1 line-clamp-2">{file.basename}</span>
+        <span className="flex-1 line-clamp-2">{file.name}</span>
       </Link>
-
-      <div className="flex items-center gap-2">
-        <LikeButton
-          file={file}
-          likes={likes}
-          isLiked={likedFiles.includes(file.props.fileid)}
-          onLike={likeFile}
-        />
-      </div>
     </div>
   )
 }
 
 export default async function Page(props: { params: Promise<{ slug: string[] }> }) {
   const params = await props.params
-  const path = params.slug.map(decodeURIComponent).join('/')
-
+  const path = '/' + params.slug.map(decodeURIComponent).join('/')
   try {
-    // Parallel data fetching
-    const [likedFiles, files] = await Promise.all([getLikedFiles(), getFilesFromDB()])
-
-    // Filter files for current path
-    const currentPathFiles = files.filter((file) => {
-      const filePath = file.currentPath.slice(0, -file.fileName.length)
-      return filePath === `/${path}/` || (path === '' && filePath === '/')
-    })
-
-    // Process files
-    const processedFiles = await processFiles(currentPathFiles)
-
     if (isFile(path)) {
-      const file = files.find((f) => f.currentPath === `/${path}`)
-      if (!file) throw new Error('File not found')
-
-      const extension = file.fileName.split('.').pop()?.toLowerCase() || ''
+      const extension = path.split('.').pop()?.toLowerCase() || ''
       return (
         <div className="h-full overflow-y-auto">
-          <FileViewer path={file.currentPath} filename={file.fileName} extension={extension} />
+          <FileViewer path={path} extension={extension} />
         </div>
       )
     }
-
+    const content = await getContentsByPath(path)
+    const { knownMdFiles, unknownMdFiles, regularFiles } = await processFiles(content.files)
     return (
       <div className="h-full overflow-y-auto w-auto">
         <CommentsProvider>
           <Suspense fallback={<Loading />}>
             <div className="flex-1">
-              {processedFiles.knownMdFiles.length > 0 && (
+              {knownMdFiles.length > 0 && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                    {processedFiles.knownMdFiles.map((file, index) => (
+                    {knownMdFiles.map((file, index) => (
                       <MdFileCard key={index} file={file} path={path} />
                     ))}
                   </div>
@@ -139,36 +102,36 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
               <div className="flex flex-col gap-4 p-4">
                 {/* Directories */}
                 <Suspense>
-                  {processedFiles.directories.map((file, index) => (
+                  {content.folders.map((file, index) => (
                     <Link
                       key={index}
-                      href={`/skripte/${path}/${encodeURIComponent(file.basename)}`}
+                      href={`/skripte/${path}/${encodeURIComponent(file.name)}`}
                       className="h-12 rounded-lg bg-muted/50 flex items-center px-4 hover:bg-muted/70 transition-colors"
                     >
                       <FolderIcon className="w-5 h-5 mr-2 text-primary" />
-                      {file.basename}
+                      {file.name}
                     </Link>
                   ))}
                 </Suspense>
 
                 {/* Unknown MD files */}
                 <Suspense>
-                  {processedFiles.unknownMdFiles.map((file, index) => (
+                  {unknownMdFiles.map((file, index) => (
                     <Link
                       key={index}
-                      href={`/skripte/${path}/${encodeURIComponent(file.basename)}`}
+                      href={`/skripte/${path}/${encodeURIComponent(file.name)}`}
                       className="h-12 rounded-lg bg-muted/50 flex items-center px-4 hover:bg-muted/70 transition-colors"
                     >
                       <FileTextIcon className="w-5 h-5 mr-2 text-muted-foreground" />
-                      {file.basename.replace('.md', '')}
+                      {file.name.replace('.md', '')}
                     </Link>
                   ))}
                 </Suspense>
 
                 {/* Regular files */}
                 <Suspense>
-                  {processedFiles.regularFiles.map((file, index) => (
-                    <FileListItem key={index} file={file} path={path} likedFiles={likedFiles} />
+                  {regularFiles.map((file, index) => (
+                    <FileListItem key={index} file={file} path={path} />
                   ))}
                 </Suspense>
               </div>

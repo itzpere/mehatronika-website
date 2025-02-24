@@ -14,14 +14,13 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 
 interface FileViewerProps {
   path: string
-  filename: string
   extension: string
 }
 
-export function FileViewer({ path, filename, extension }: FileViewerProps) {
+export function FileViewer({ path, extension }: FileViewerProps) {
   const [numPages, setNumPages] = useState<number>(0)
   const [markdown, setMarkdown] = useState('')
-
+  const filename = path.split('/').pop() || ''
   const shareId = process.env.NEXT_PUBLIC_NEXTCLOUD_SHARE_ID
   const cleanPath = path
     .replace(/^\//, '')
@@ -29,7 +28,7 @@ export function FileViewer({ path, filename, extension }: FileViewerProps) {
     .replace(new RegExp(`${filename}$`), '')
 
   const fileUrl = `https://cloud.itzpere.com/s/${shareId}/download?path=/${encodeURIComponent(cleanPath)}/${filename}`
-  // TODO:dodaj jos file ektenzija
+  // TODO: Handle more file extensions for better support
 
   const { ref, inView: _inView } = useInView({
     threshold: 0.1,

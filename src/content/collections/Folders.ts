@@ -40,6 +40,11 @@ export const Folders: CollectionConfig = {
       ],
       defaultValue: 'public',
     },
+    {
+      name: 'deleted',
+      type: 'checkbox',
+      defaultValue: false,
+    },
   ],
   timestamps: true,
 }

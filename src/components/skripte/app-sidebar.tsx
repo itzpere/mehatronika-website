@@ -1,7 +1,6 @@
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import * as React from 'react'
-import { cache } from 'react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   Sidebar,
@@ -15,60 +14,50 @@ import {
   SidebarMenuSubItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar'
-import { withCache } from '@/lib/utils/cache'
-import { publicDavClient } from '@/lib/utils/public-webdav'
-import { SearchForm } from './search-form'
+import { getAllFolders } from './file-utils'
 
-export const revalidate = 3600 // 1 hour
-
-interface WebDavFile {
-  basename: string
-  filename: string
-  type: 'directory' | 'file'
-}
-
-interface NavItem {
+interface TreeNode {
   title: string
   url: string
-  items?: NavItem[]
+  items?: TreeNode[]
 }
-// env folder for sidebar
 
-async function getWebDavStructure(
-  path: string = `${process.env.WEBDAV_DEFAULT_FOLDER || '/'}`,
-): Promise<NavItem[]> {
-  return withCache(`webdav:${path}`, async () => {
-    const files = (await publicDavClient.getDirectoryContents(path)) as WebDavFile[]
-    const navItems: NavItem[] = []
+async function getNavItems() {
+  const folders = await getAllFolders()
+  const tree: TreeNode[] = []
 
-    await Promise.all(
-      files.map(async (file) => {
-        if (file.type === 'directory') {
-          const subitems = await getWebDavStructure(file.filename)
-          navItems.push({
-            title: file.basename,
-            url: `/skripte/${file.filename}`,
-            items: subitems,
-          })
+  // Build tree structure
+  folders.forEach((folder) => {
+    const path = folder.currentPath.split('/')
+    let current = tree
+    path.forEach((segment, index) => {
+      if (!segment) return // Skip empty segments
+
+      const existing = current.find((node) => node.title === segment)
+      if (existing) {
+        current = existing.items || []
+      } else {
+        const newNode = {
+          title: segment,
+          url: path.slice(0, index + 1).join('/') || '/',
+          items: [],
         }
-      }),
-    )
-
-    return navItems.sort((a, b) => a.title.localeCompare(b.title))
+        current.push(newNode)
+        current = newNode.items!
+      }
+    })
   })
+
+  return tree
 }
-
-const getNavItems = cache(async () => {
-  return getWebDavStructure()
-})
-
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const navMain = await getNavItems()
 
   return (
     <Sidebar {...props} className="top-20 z-40 py-4">
       <SidebarHeader>
-        <SearchForm />
+        {/* TODO: last updated section*/}
+        {/* <SearchForm /> */}
       </SidebarHeader>
       <SidebarContent className="gap-0">
         <SidebarMenu>
@@ -100,7 +89,9 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
                                       asChild
                                       className="h-auto min-h-[1.75rem] py-1.5 whitespace-normal"
                                     >
-                                      <Link href={deepItem.url}>{deepItem.title}</Link>
+                                      <Link href={'/skripte/' + deepItem.url}>
+                                        {deepItem.title}
+                                      </Link>
                                     </SidebarMenuSubButton>
                                   </SidebarMenuSubItem>
                                 ))}

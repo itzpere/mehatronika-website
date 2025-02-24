@@ -44,6 +44,7 @@ export function BreadcrumbHeader({ className }: HeaderProps) {
   const pathname = usePathname()
   const segments = pathname?.split('/').slice(2).filter(Boolean) || []
   const currentSegment = segments[segments.length - 1]
+  const visibleSegments = segments.slice(2)
 
   return (
     <div className={cn('flex flex-col z-50 bg-background border-b px-4 shadow-sm', className)}>
@@ -57,12 +58,20 @@ export function BreadcrumbHeader({ className }: HeaderProps) {
 
         <Breadcrumb className="hidden md:block">
           <BreadcrumbList>
-            {segments.map((segment, index) => (
+            {segments.length > 4 && (
+              <>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>...</BreadcrumbPage>
+                </BreadcrumbItem>
+              </>
+            )}
+            {visibleSegments.map((segment, index) => (
               <BreadcrumbSegment
                 key={segment}
                 segment={segment}
-                href={`/skripte/${segments.slice(0, index + 1).join('/')}`}
-                isLast={index === segments.length - 1}
+                href={`/skripte/${segments.slice(0, segments.length - visibleSegments.length + index + 1).join('/')}`}
+                isLast={index === visibleSegments.length - 1}
               />
             ))}
           </BreadcrumbList>

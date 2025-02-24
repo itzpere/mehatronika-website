@@ -34,6 +34,7 @@ export async function syncFilesFromWebDAV(): Promise<void> {
     const folder = await payload.find({
       collection: 'folders',
       where: { currentPath: { equals: path } },
+      limit: 1000,
     })
     const uuid = folder.docs[0]?.uuid ?? 0
     folderCache.set(path, uuid)
@@ -113,6 +114,7 @@ export async function syncFilesFromWebDAV(): Promise<void> {
         where: {
           uuid: { equals: file.props?.fileid },
         },
+        limit: 1000,
       })
       const pathSegments = file.filename.split('/')
       const parentPath = pathSegments.slice(0, -1).join('/') || '/'

@@ -2,7 +2,7 @@ import React from 'react'
 import '@/app/(public)/global.css'
 import { Header } from '@/components/layout/Header'
 import { AppSidebar } from '@/components/skripte/app-sidebar'
-import { BreadcrumbHeader } from '@/components/skripte/header'
+import { BreadcrumbHeader } from '@/components/skripte/breadcrumbHeader'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 
 export const metadata = {

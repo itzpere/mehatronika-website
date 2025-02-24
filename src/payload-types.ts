@@ -342,6 +342,7 @@ export interface Folder {
   currentPath: string;
   parentId: number;
   visibility?: ('public' | 'private' | 'shared') | null;
+  deleted?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -597,6 +598,7 @@ export interface FoldersSelect<T extends boolean = true> {
   currentPath?: T;
   parentId?: T;
   visibility?: T;
+  deleted?: T;
   updatedAt?: T;
   createdAt?: T;
 }
