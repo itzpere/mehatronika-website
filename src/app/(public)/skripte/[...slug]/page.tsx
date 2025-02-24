@@ -11,14 +11,11 @@ import {
   type FileStat,
   isFile,
   processFiles,
-  checkAndCreateFiles,
-  getWebDAVClient,
+  getFilesFromDB,
 } from '@/components/skripte/file-utils'
 import { FileViewer } from '@/components/skripte/file-viewer'
 import { LikeButton } from '@/components/skripte/like-button'
 import Loading from './loading'
-
-const client = getWebDAVClient()
 
 export const revalidate = 3600
 
@@ -98,32 +95,25 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
 
   try {
     // Parallel data fetching
-    const [likedFiles, files] = await Promise.all([
-      getLikedFiles(),
-      client.getDirectoryContents(`${process.env.WEBDAV_DEFAULT_FOLDER || '/'}${path}`, {
-        details: true,
-        data: `<?xml version="1.0" encoding="UTF-8"?>
-          <d:propfind xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
-            <d:prop>
-              <d:getlastmodified/>
-              <d:getcontentlength/>
-              <d:getcontenttype/>
-              <d:resourcetype/>
-              <d:getetag/>
-              <oc:fileid/>
-            </d:prop>
-          </d:propfind>`,
-      }) as unknown as FileStat[],
-    ])
+    const [likedFiles, files] = await Promise.all([getLikedFiles(), getFilesFromDB()])
 
-    // Process files and create DB entries in parallel
-    const [processedFiles] = await Promise.all([processFiles(files), checkAndCreateFiles(files)])
+    // Filter files for current path
+    const currentPathFiles = files.filter((file) => {
+      const filePath = file.currentPath.slice(0, -file.fileName.length)
+      return filePath === `/${path}/` || (path === '' && filePath === '/')
+    })
+
+    // Process files
+    const processedFiles = await processFiles(currentPathFiles)
 
     if (isFile(path)) {
-      const extension = files[0].basename.split('.').pop()?.toLowerCase() || ''
+      const file = files.find((f) => f.currentPath === `/${path}`)
+      if (!file) throw new Error('File not found')
+
+      const extension = file.fileName.split('.').pop()?.toLowerCase() || ''
       return (
         <div className="h-full overflow-y-auto">
-          <FileViewer path={files[0].filename} filename={files[0].basename} extension={extension} />
+          <FileViewer path={file.currentPath} filename={file.fileName} extension={extension} />
         </div>
       )
     }

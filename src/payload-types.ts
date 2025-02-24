@@ -70,6 +70,8 @@ export interface Config {
     Newsletter: Newsletter;
     kontakt: Kontakt;
     files: File;
+    folders: Folder;
+    'file-comments': FileComment;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -81,6 +83,8 @@ export interface Config {
     Newsletter: NewsletterSelect<false> | NewsletterSelect<true>;
     kontakt: KontaktSelect<false> | KontaktSelect<true>;
     files: FilesSelect<false> | FilesSelect<true>;
+    folders: FoldersSelect<false> | FoldersSelect<true>;
+    'file-comments': FileCommentsSelect<false> | FileCommentsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -280,13 +284,64 @@ export interface Kontakt {
  */
 export interface File {
   id: number;
-  fileId: number;
-  likes?: number | null;
-  author?: string | null;
-  fileName?: string | null;
-  modified?: string | null;
+  uuid: number;
+  name: string;
+  currentPath: string;
+  parentId: number;
+  lastModified?: string | null;
   size?: number | null;
-  location?: string | null;
+  type?: string | null;
+  likes?:
+    | {
+        betterAuthUserId: string;
+        createdAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  comments?: (number | FileComment)[] | null;
+  reports?:
+    | {
+        betterAuthUserId: string;
+        reason: string;
+        id?: string | null;
+      }[]
+    | null;
+  likeCount?: number | null;
+  deleted?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "file-comments".
+ */
+export interface FileComment {
+  id: number;
+  file: number | File;
+  userId: string;
+  content: string;
+  replies?:
+    | {
+        user: number | User;
+        content: string;
+        createdAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "folders".
+ */
+export interface Folder {
+  id: number;
+  uuid: number;
+  name: string;
+  currentPath: string;
+  parentId: number;
+  visibility?: ('public' | 'private' | 'shared') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -316,6 +371,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'files';
         value: number | File;
+      } | null)
+    | ({
+        relationTo: 'folders';
+        value: number | Folder;
+      } | null)
+    | ({
+        relationTo: 'file-comments';
+        value: number | FileComment;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -497,13 +560,62 @@ export interface KontaktSelect<T extends boolean = true> {
  * via the `definition` "files_select".
  */
 export interface FilesSelect<T extends boolean = true> {
-  fileId?: T;
-  likes?: T;
-  author?: T;
-  fileName?: T;
-  modified?: T;
+  uuid?: T;
+  name?: T;
+  currentPath?: T;
+  parentId?: T;
+  lastModified?: T;
   size?: T;
-  location?: T;
+  type?: T;
+  likes?:
+    | T
+    | {
+        betterAuthUserId?: T;
+        createdAt?: T;
+        id?: T;
+      };
+  comments?: T;
+  reports?:
+    | T
+    | {
+        betterAuthUserId?: T;
+        reason?: T;
+        id?: T;
+      };
+  likeCount?: T;
+  deleted?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "folders_select".
+ */
+export interface FoldersSelect<T extends boolean = true> {
+  uuid?: T;
+  name?: T;
+  currentPath?: T;
+  parentId?: T;
+  visibility?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "file-comments_select".
+ */
+export interface FileCommentsSelect<T extends boolean = true> {
+  file?: T;
+  userId?: T;
+  content?: T;
+  replies?:
+    | T
+    | {
+        user?: T;
+        content?: T;
+        createdAt?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
