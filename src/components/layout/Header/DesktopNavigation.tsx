@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import React from 'react'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { authClient } from '@/lib/auth/auth-client'
 
 interface NavLinkProps {
   href: string
@@ -39,6 +41,35 @@ interface DesktopNavigationProps {
 }
 
 const DesktopNavigation = ({ navItems, pathname }: DesktopNavigationProps) => {
+  const [session, setSession] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const getSession = async () => {
+      try {
+        const { data } = await authClient.getSession()
+        setSession(data)
+      } catch (err) {
+        console.error('Failed to get session', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    getSession()
+  }, [])
+
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut()
+      toast.success('Uspešno ste se odjavili')
+      window.location.reload() // Force refresh after logout
+    } catch (err) {
+      toast.error('Greška prilikom odjavljivanja')
+      console.error('Logout failed', err)
+    }
+  }
+
   return (
     <div className="hidden md:flex md:items-center md:gap-1">
       {navItems.map((item) => (
@@ -51,6 +82,24 @@ const DesktopNavigation = ({ navItems, pathname }: DesktopNavigationProps) => {
       ))}
 
       <div className="h-6 w-px bg-gray-200 mx-3" aria-hidden="true"></div>
+
+      {!loading && session?.user ? (
+        <button
+          onClick={handleLogout}
+          className="ml-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary font-medium text-sm
+          transition-all duration-300 hover:bg-secondary hover:text-white active:scale-95"
+        >
+          Logout
+        </button>
+      ) : (
+        <Link
+          href="/login"
+          className="ml-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary font-medium text-sm
+          transition-all duration-300 hover:bg-secondary hover:text-white active:scale-95"
+        >
+          Login
+        </Link>
+      )}
 
       <Link
         href="/skripte"

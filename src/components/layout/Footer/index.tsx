@@ -1,10 +1,12 @@
-import { Instagram, Facebook, Mail, ArrowRight, Coffee, Heart } from 'lucide-react'
+import { SiDiscord } from '@icons-pack/react-simple-icons'
+import { ArrowRight, Coffee, Heart } from 'lucide-react'
 import Link from 'next/link'
+import pkg from '../../../../package.json'
+
+const version = `v${pkg.version}`
 
 const SocialIcon = {
-  instagram: Instagram,
-  facebook: Facebook,
-  email: Mail,
+  discord: SiDiscord,
 }
 
 const data = {
@@ -14,15 +16,13 @@ const data = {
       links: [
         { label: 'Skripte', url: '/skripte' },
         { label: 'Login', url: '/login' },
-        { label: 'Forum', url: '/forum' },
       ],
     },
   ],
-  socialLinks: [
-    { platform: 'instagram', url: 'https://instagram.com' },
-    { platform: 'facebook', url: 'https://facebook.com' },
-    { platform: 'email', url: 'mailto:info@example.com' },
-  ] as { platform: 'instagram' | 'facebook' | 'email'; url: string }[],
+  socialLinks: [{ platform: 'discord', url: 'https://discord.com/invite/R5s47krDan' }] as {
+    platform: 'discord'
+    url: string
+  }[],
   copyright: '© 2025 Mehatronika. Sva prava zadržana.',
 }
 
@@ -99,13 +99,7 @@ export function Footer() {
                         <Icon className="h-4 w-4" />
                       </div>
                       <span className="border-b border-transparent hover:border-primary/30 text-sm">
-                        {social.platform === 'instagram'
-                          ? 'Instagram'
-                          : social.platform === 'facebook'
-                            ? 'Facebook'
-                            : social.platform === 'email'
-                              ? 'Email'
-                              : social.platform}
+                        {social.platform === 'discord' ? 'Discord' : ''}
                       </span>
                     </a>
                   )
@@ -116,7 +110,9 @@ export function Footer() {
         </div>
 
         <div className="mt-16 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="text-sm text-gray-500">{data.copyright}</div>
+          <div className="text-sm text-gray-500">
+            {data.copyright} - {version}
+          </div>
           <div className="flex items-center gap-8">
             <Link
               href="/privacy"

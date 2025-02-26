@@ -2,7 +2,9 @@
 
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { authClient } from '@/lib/auth/auth-client'
 
 interface NavItem {
   id: string
@@ -69,8 +71,11 @@ const MobileLink = ({
   </li>
 )
 
+// Add session state
 export const MobileMenu = ({ isOpen, navItems, pathname, onClose }: MobileMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null)
+  const [session, setSession] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -79,6 +84,33 @@ export const MobileMenu = ({ isOpen, navItems, pathname, onClose }: MobileMenuPr
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen, onClose])
+
+  // Add session fetch
+  useEffect(() => {
+    const getSession = async () => {
+      try {
+        const { data } = await authClient.getSession()
+        setSession(data)
+      } catch (err) {
+        console.error('Failed to get session', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    getSession()
+  }, [])
+
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut()
+      toast.success('Uspešno ste se odjavili')
+      window.location.reload()
+    } catch (err) {
+      console.error('Logout failed', err)
+      toast.error('Greška prilikom odjavljivanja')
+    }
+  }
 
   return (
     <>
@@ -129,6 +161,31 @@ export const MobileMenu = ({ isOpen, navItems, pathname, onClose }: MobileMenuPr
               >
                 Skripte
               </Link>
+            </div>
+
+            {/* Add Login/Logout button */}
+            <div className="px-6 py-3">
+              {!loading && session?.user ? (
+                <button
+                  onClick={() => {
+                    handleLogout()
+                    onClose()
+                  }}
+                  className="flex justify-center w-full px-4 py-3 rounded-lg bg-secondary/10 text-secondary font-medium
+                  transition-all duration-300 hover:bg-secondary hover:text-white active:scale-95"
+                >
+                  Logout
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex justify-center w-full px-4 py-3 rounded-lg bg-secondary/10 text-secondary font-medium
+                  transition-all duration-300 hover:bg-secondary hover:text-white active:scale-95"
+                  onClick={onClose}
+                >
+                  Login
+                </Link>
+              )}
             </div>
           </nav>
 

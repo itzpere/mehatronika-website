@@ -13,7 +13,6 @@ import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth/auth-client'
 import { cn } from '@/lib/utils/cn'
 
-
 const registerSchema = z
   .object({
     firstName: z.string().min(2, 'Ime mora imati najmanje 2 karaktera'),
@@ -182,11 +181,12 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
               <Button
                 variant="outline"
                 className="w-full"
+                disabled
                 onClick={async () => {
                   try {
                     const promise = authClient.signIn.social({
                       provider: 'google',
-                      callbackURL: '/dashboard',
+                      callbackURL: '/',
                       errorCallbackURL: '/register?error=auth-failed',
                       newUserCallbackURL: '/welcome',
                     })
