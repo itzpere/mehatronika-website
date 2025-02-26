@@ -94,11 +94,9 @@ export interface Config {
     defaultIDType: number;
   };
   globals: {
-    footer: Footer;
     header: Header;
   };
   globalsSelect: {
-    footer: FooterSelect<false> | FooterSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
   };
   locale: null;
@@ -294,7 +292,7 @@ export interface File {
   type?: string | null;
   likes?:
     | {
-        betterAuthUserId: string;
+        likeBetterAuthUserId: string;
         createdAt?: string | null;
         id?: string | null;
       }[]
@@ -302,12 +300,11 @@ export interface File {
   comments?: (number | FileComment)[] | null;
   reports?:
     | {
-        betterAuthUserId: string;
+        reportBetterAuthUserId: string;
         reason: string;
         id?: string | null;
       }[]
     | null;
-  likeCount?: number | null;
   deleted?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -572,7 +569,7 @@ export interface FilesSelect<T extends boolean = true> {
   likes?:
     | T
     | {
-        betterAuthUserId?: T;
+        likeBetterAuthUserId?: T;
         createdAt?: T;
         id?: T;
       };
@@ -580,11 +577,10 @@ export interface FilesSelect<T extends boolean = true> {
   reports?:
     | T
     | {
-        betterAuthUserId?: T;
+        reportBetterAuthUserId?: T;
         reason?: T;
         id?: T;
       };
-  likeCount?: T;
   deleted?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -656,74 +652,20 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "footer".
- */
-export interface Footer {
-  id: number;
-  columns: {
-    title: string;
-    links: {
-      label: string;
-      url: string;
-      id?: string | null;
-    }[];
-    id?: string | null;
-  }[];
-  socialLinks?:
-    | {
-        platform: 'instagram' | 'facebook' | 'email';
-        url: string;
-        id?: string | null;
-      }[]
-    | null;
-  copyright: string;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header".
  */
 export interface Header {
   id: number;
-  navItems: {
-    label: string;
-    href: string;
-    id?: string | null;
-  }[];
+  navItems?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
   logo: string;
   updatedAt?: string | null;
   createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "footer_select".
- */
-export interface FooterSelect<T extends boolean = true> {
-  columns?:
-    | T
-    | {
-        title?: T;
-        links?:
-          | T
-          | {
-              label?: T;
-              url?: T;
-              id?: T;
-            };
-        id?: T;
-      };
-  socialLinks?:
-    | T
-    | {
-        platform?: T;
-        url?: T;
-        id?: T;
-      };
-  copyright?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

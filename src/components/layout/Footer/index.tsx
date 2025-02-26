@@ -1,7 +1,5 @@
-import { Instagram, Facebook, Mail } from 'lucide-react'
+import { Instagram, Facebook, Mail, ArrowRight, Coffee, Heart } from 'lucide-react'
 import Link from 'next/link'
-import { getCachedGlobal } from '@/lib/utils/getGlobals'
-import type { Footer } from '@/payload-types'
 
 const SocialIcon = {
   instagram: Instagram,
@@ -9,62 +7,131 @@ const SocialIcon = {
   email: Mail,
 }
 
-export async function Footer() {
-  const data = (await getCachedGlobal('footer', 1)()) as Footer
+const data = {
+  columns: [
+    {
+      title: 'Resursi',
+      links: [
+        { label: 'Skripte', url: '/skripte' },
+        { label: 'Login', url: '/login' },
+        { label: 'Forum', url: '/forum' },
+      ],
+    },
+  ],
+  socialLinks: [
+    { platform: 'instagram', url: 'https://instagram.com' },
+    { platform: 'facebook', url: 'https://facebook.com' },
+    { platform: 'email', url: 'mailto:info@example.com' },
+  ] as { platform: 'instagram' | 'facebook' | 'email'; url: string }[],
+  copyright: '© 2025 Mehatronika. Sva prava zadržana.',
+}
 
+export function Footer() {
   return (
-    <footer className="mt-auto w-full bg-white border-t-2 border-primary/10">
-      <div className="container mx-auto px-6 py-4">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-3">
-          {data.columns.map((column, index) => (
-            <div key={index}>
-              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-primary">
-                {column.title}
+    <footer className="mt-auto w-full bg-gradient-to-b from-white via-gray-50 to-gray-100 border-t border-primary/10">
+      <div className="container mx-auto px-4 sm:px-6 py-12">
+        <div className="flex flex-col md:flex-row justify-between gap-8 md:gap-12">
+          {/* Brand and description column */}
+          <div className="max-w-sm mx-auto">
+            {/* Donation section */}
+            <div className="bg-gradient-to-r from-amber-50 via-amber-50 to-white p-5 rounded-xl border border-amber-200 shadow-sm">
+              <h3 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+                <Heart className="h-4 w-4 fill-amber-500 text-amber-500" />
+                Podržite naš rad
               </h3>
-              <ul className="space-y-2">
-                {column.links.map((link, linkIndex) => (
-                  <li key={linkIndex}>
-                    <Link
-                      href={link.url}
-                      className="text-gray-600 transition-colors hover:text-primary"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <p className="text-gray-600 mb-3 text-sm">
+                Pomozite nam da održimo resurse besplatnim i otvorenim za sve studente.
+              </p>
+              <a
+                href="https://buymeacoffee.com/mehatronika"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-4 py-2 rounded-lg bg-amber-500 text-white font-medium hover:bg-amber-600 transition-all active:scale-[0.98] transform shadow-sm"
+              >
+                <Coffee className="h-5 w-5 mr-2" />
+                Častite nas kaficom
+              </a>
             </div>
-          ))}
+          </div>
 
-          <div>
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-primary">
-              Pratite nas
-            </h3>
-            <ul className="space-y-2">
-              {data.socialLinks &&
-                data.socialLinks.map((social, index) => {
-                  const Icon = SocialIcon[social.platform]
-                  return (
-                    <li key={index}>
-                      <a
-                        href={social.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-gray-600 transition-colors hover:text-primary"
+          {/* Link columns */}
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-6 w-full mt-8 md:mt-0">
+            {data.columns.map((column, index) => (
+              <div key={index} className="min-w-0">
+                <h3 className="mb-3 text-xs sm:text-sm font-bold uppercase tracking-wider text-primary border-b border-primary/10 pb-1.5">
+                  {column.title}
+                </h3>
+                <ul className="space-y-2.5">
+                  {column.links.map((link, linkIndex) => (
+                    <li key={linkIndex} className="group">
+                      <Link
+                        href={link.url}
+                        className="inline-flex items-center text-gray-600 transition-all hover:text-primary text-sm"
                       >
-                        <Icon className="mr-2 h-5 w-5" />
-                        <span>{social.platform}</span>
-                      </a>
+                        <span className="border-b border-transparent group-hover:border-primary/30">
+                          {link.label}
+                        </span>
+                        <ArrowRight className="ml-1 h-3 w-3 opacity-0 transition-all -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0" />
+                      </Link>
                     </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+
+            {/* Social links */}
+            <div className="col-span-1 xs:col-span-2 sm:col-span-1 mt-4 sm:mt-0">
+              <h3 className="mb-3 text-xs sm:text-sm font-bold uppercase tracking-wider text-primary border-b border-primary/10 pb-1.5">
+                Pratite nas
+              </h3>
+              <div className="flex flex-wrap sm:flex-col gap-4">
+                {data.socialLinks.map((social, index) => {
+                  const Icon = SocialIcon[social.platform as keyof typeof SocialIcon]
+                  return (
+                    <a
+                      key={index}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-gray-600 hover:text-primary transition-all"
+                    >
+                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-100/80 text-gray-600 mr-2 transition-all hover:bg-primary/10 hover:text-primary shadow-sm">
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <span className="border-b border-transparent hover:border-primary/30 text-sm">
+                        {social.platform === 'instagram'
+                          ? 'Instagram'
+                          : social.platform === 'facebook'
+                            ? 'Facebook'
+                            : social.platform === 'email'
+                              ? 'Email'
+                              : social.platform}
+                      </span>
+                    </a>
                   )
                 })}
-            </ul>
+              </div>
+            </div>
           </div>
         </div>
 
-        <hr className="my-2 border-gray-200" />
-
-        <div className="text-center text-sm text-gray-600">{data.copyright}</div>
+        <div className="mt-16 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="text-sm text-gray-500">{data.copyright}</div>
+          <div className="flex items-center gap-8">
+            <Link
+              href="/privacy"
+              className="text-sm text-gray-500 hover:text-primary transition-colors"
+            >
+              Pravila privatnosti
+            </Link>
+            <Link
+              href="/terms"
+              className="text-sm text-gray-500 hover:text-primary transition-colors"
+            >
+              Uvjeti korištenja
+            </Link>
+          </div>
+        </div>
       </div>
     </footer>
   )

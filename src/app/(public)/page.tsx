@@ -26,7 +26,7 @@ import Skripte from '@/components/public/Skripte'
 
 export default async function HomePage() {
   return (
-    <div className="space-y-24 md:space-y-50 py-0 md:py-12">
+    <div className="space-y-24 md:space-y-50 py-0 pt-20">
       <Header />
       <Hero />
       <MailSubscription />

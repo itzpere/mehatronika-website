@@ -7,7 +7,6 @@ import { BlocksFeature, FixedToolbarFeature, lexicalEditor } from '@payloadcms/r
 import { s3Storage } from '@payloadcms/storage-s3'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
-import { Footer } from '@/components/layout/Footer/config'
 import { Header } from '@/components/layout/Header/config'
 import { FileComments } from './content/collections/FileComments'
 import { Files } from './content/collections/Files'
@@ -43,7 +42,7 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  globals: [Footer, Header],
+  globals: [Header],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || '',

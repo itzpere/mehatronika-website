@@ -9,7 +9,6 @@ export const Header: GlobalConfig = {
     {
       name: 'navItems',
       type: 'array',
-      required: true,
       fields: [
         {
           name: 'label',

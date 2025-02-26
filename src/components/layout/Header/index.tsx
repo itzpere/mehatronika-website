@@ -44,10 +44,12 @@ export async function Header({ className }: HeaderProps) {
 
         <div className="flex items-center gap-8">
           <Navigation
-            navItems={data.navItems.map((item) => ({
-              ...item,
-              id: item.id ?? '',
-            }))}
+            navItems={
+              data.navItems?.map((item) => ({
+                ...item,
+                id: item.id ?? '',
+              })) ?? []
+            }
           />
         </div>
       </nav>

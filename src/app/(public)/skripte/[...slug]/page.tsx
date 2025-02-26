@@ -1,10 +1,10 @@
 import { FolderIcon, FileTextIcon, VideoIcon } from 'lucide-react'
+import { headers } from 'next/headers'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { CommentsProvider, CommentSidebar } from '@/components/skripte/comments-sidebar'
+import { CommentsProvider } from '@/components/skripte/comments-sidebar'
 import { getFileIcon } from '@/components/skripte/file-icons'
-// import { getLikes, likeFile, getLikedFiles } from '@/components/skripte/file-likes'
 import {
   isImage,
   isVideo,
@@ -13,7 +13,9 @@ import {
   getContentsByPath,
 } from '@/components/skripte/file-utils'
 import { FileViewer } from '@/components/skripte/file-viewer'
-// import { LikeButton } from '@/components/skripte/like-button'
+import { LikeButton } from '@/components/skripte/like-button'
+import { getLikeStatus } from '@/components/skripte/likes'
+import { auth } from '@/lib/auth/auth'
 import type { File as PayloadFile } from '@/payload-types'
 import Loading from './loading'
 
@@ -38,31 +40,55 @@ const MdFileCard = ({ file, path }: MdFileCardProps) => (
 )
 
 const FileListItem = async ({ file, path }: { file: PayloadFile; path: string }) => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+
+  const likeStatus = await getLikeStatus(
+    session?.user.id ?? '',
+    (file.likes || []).map((like) => ({
+      ...like,
+      createdAt: like.createdAt || '',
+      betterAuthUserId: like.likeBetterAuthUserId,
+    })), // Ensure createdAt is a string
+  )
+  const likeButton = (
+    <LikeButton
+      betterAuthUserID={session?.user?.id ?? ''}
+      userUUID={file.uuid}
+      likes={likeStatus.likes}
+      isLiked={likeStatus.isLiked}
+    />
+  )
+
   return (
-    <div className="h-12 rounded-lg bg-muted/50 flex items-center px-4 hover:bg-muted/70 transition-colors group">
-      <Link
-        href={`/skripte/${path}/${encodeURIComponent(file.name)}`}
-        className="flex items-center flex-1"
-      >
-        {isImage(file.name) ? (
-          <div className="relative w-8 h-8 mr-2 rounded overflow-hidden bg-muted">
-            <Image
-              src={`/api/thumbnail?path=${encodeURIComponent(`${path}/${file.name}`)}`}
-              alt={file.name}
-              fill
-              className="object-cover"
-              sizes="32px"
-              loading="lazy"
-              quality={60}
-            />
-          </div>
-        ) : isVideo(file.name) ? (
-          <VideoIcon className="w-5 h-5 mr-2 text-blue-500" />
-        ) : (
-          getFileIcon(file.name)
-        )}
-        <span className="flex-1 line-clamp-2">{file.name}</span>
-      </Link>
+    <div className="flex items-center gap-2">
+      <div className="h-12 rounded-lg bg-muted/50 flex-1 flex items-center px-4 hover:bg-muted/70 transition-colors group">
+        <Link
+          href={`/skripte/${path}/${encodeURIComponent(file.name)}`}
+          className="flex items-center flex-1"
+        >
+          {isImage(file.name) ? (
+            <div className="relative w-8 h-8 mr-2 rounded overflow-hidden bg-muted">
+              <Image
+                src={`/api/thumbnail?path=${encodeURIComponent(`${path}/${file.name}`)}`}
+                alt={file.name}
+                fill
+                className="object-cover"
+                sizes="32px"
+                loading="lazy"
+                quality={60}
+              />
+            </div>
+          ) : isVideo(file.name) ? (
+            <VideoIcon className="w-5 h-5 mr-2 text-blue-500" />
+          ) : (
+            getFileIcon(file.name)
+          )}
+          <span className="flex-1 line-clamp-2">{file.name}</span>
+        </Link>
+      </div>
+      {likeButton}
     </div>
   )
 }
@@ -136,7 +162,7 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
                 </Suspense>
               </div>
             </div>
-            <CommentSidebar />
+            {/* <CommentSidebar /> */}
           </Suspense>
         </CommentsProvider>
       </div>
