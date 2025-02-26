@@ -51,13 +51,13 @@ const Hero: React.FC = () => {
             variant="outline"
             className="w-full sm:w-auto group text-base md:text-lg font-medium px-6 md:px-8 py-3 border-secondary/50 hover:bg-secondary/50 transition-all duration-300 hover:border-secondary"
           >
-            <Link href="/zajednica" className="flex items-center justify-center">
+            <Link href="/login" className="flex items-center justify-center">
               <Users className="mr-2 h-4 md:h-5 w-4 md:w-5" />
               Pridruži se zajednici
             </Link>
           </Button>
         </div>
-
+        {/* TODO: napravi da dugme nesto radi */}
         {/* Mobile-optimized feature highlights */}
         <div className="mt-10 md:mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 animate-fade-up [--animation-delay:600ms]">
           {[

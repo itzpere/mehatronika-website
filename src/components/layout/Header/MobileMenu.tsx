@@ -118,6 +118,18 @@ export const MobileMenu = ({ isOpen, navItems, pathname, onClose }: MobileMenuPr
                 />
               ))}
             </ul>
+
+            {/* Add Skripte button */}
+            <div className="px-6 py-3">
+              <Link
+                href="/skripte"
+                className="flex justify-center w-full px-4 py-3 rounded-lg bg-primary/10 text-primary font-medium
+                transition-all duration-300 hover:bg-primary hover:text-white active:scale-95"
+                onClick={onClose}
+              >
+                Skripte
+              </Link>
+            </div>
           </nav>
 
           <div className="mt-auto border-t border-gray-100 p-6 space-y-4">
