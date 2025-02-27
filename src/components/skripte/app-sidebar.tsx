@@ -54,7 +54,7 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
   const navMain = await getNavItems()
 
   return (
-    <Sidebar {...props} className="top-20 z-100 py-4 shadow-sm">
+    <Sidebar {...props} className="top-20 z-0 py-4 shadow-sm">
       <SidebarHeader className="px-4">
         <div className="flex items-center gap-2 mb-2 animate-fade-up">
           <div className="p-2 rounded-md bg-sidebar-accent">

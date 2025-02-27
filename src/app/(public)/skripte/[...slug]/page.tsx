@@ -214,7 +214,7 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
                     <h2 className="text-lg font-medium text-primary mb-2 sm:mb-3">
                       Istaknuti dokumenti
                     </h2>
-                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                       {knownMdFiles.slice(0, 4).map((file, index) => (
                         <MdFileCard key={index} file={file} path={path} />
                       ))}

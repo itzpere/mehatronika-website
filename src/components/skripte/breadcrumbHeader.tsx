@@ -1,7 +1,6 @@
 'use client'
 
 import { ChevronRight, Home, Menu } from 'lucide-react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Breadcrumb,
@@ -73,21 +72,6 @@ export function BreadcrumbHeader({ className }: HeaderProps) {
         </SidebarTrigger>
 
         <Separator orientation="vertical" className="mr-2 h-4" />
-
-        <div className="md:hidden text-sm font-medium truncate flex items-center">
-          <Link
-            href="/skripte"
-            className="flex items-center text-muted-foreground hover:text-primary transition-colors"
-          >
-            <Home className="h-3.5 w-3.5 mr-1" />
-          </Link>
-          {currentSegment && (
-            <>
-              <ChevronRight className="h-3.5 w-3.5 mx-1 text-muted-foreground shrink-0" />
-              <span className="text-foreground truncate">{decodeURIComponent(currentSegment)}</span>
-            </>
-          )}
-        </div>
 
         <Breadcrumb className="hidden md:block overflow-hidden">
           <BreadcrumbList className="animate-fade-in">

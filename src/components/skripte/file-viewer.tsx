@@ -177,7 +177,7 @@ export function FileViewer({ path, extension }: FileViewerProps) {
           <Page
             pageNumber={currentPage}
             scale={scale}
-            width={800}
+            width={Math.min(window.innerWidth - 40, 800)}
             renderTextLayer={false}
             renderAnnotationLayer={false}
             loading={<div className="h-[800px] w-full animate-pulse bg-muted/50 rounded" />}
