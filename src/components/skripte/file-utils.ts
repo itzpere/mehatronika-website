@@ -3,6 +3,10 @@ import type { File } from '@/payload-types'
 import configPromise from '@payload-config'
 import { mdFileInfo } from './top-md-files'
 
+const payload = await getPayload({
+  config: configPromise,
+})
+
 interface WebDAVProps {
   getlastmodified: string
   getcontentlength: string
@@ -26,10 +30,6 @@ export interface FileStat {
   title?: string
   description?: string
 }
-
-const payload = await getPayload({
-  config: configPromise,
-})
 
 export const formatFileSize = (bytes: number): string => {
   const units = ['B', 'KB', 'MB', 'GB']

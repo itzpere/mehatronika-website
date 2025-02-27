@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DesktopNavigation from './DesktopNavigation'
 import { MobileMenuButton } from './MobileMenu'
 import { MobileMenuPortal } from './MobileMenuPortal'
@@ -20,12 +20,22 @@ const Navigation = ({ navItems }: NavigationProps) => {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
+  // Prevent scrolling when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
+
   return (
     <div className="flex items-center">
-      <DesktopNavigation navItems={navItems} />
+      <DesktopNavigation navItems={navItems} pathname={pathname} />
       <div className="md:hidden">
-        {' '}
-        {/* Wrap mobile elements */}
         <MobileMenuButton isOpen={isOpen} onClick={() => setIsOpen((prev) => !prev)} />
         <MobileMenuPortal
           isOpen={isOpen}
@@ -38,5 +48,4 @@ const Navigation = ({ navItems }: NavigationProps) => {
   )
 }
 
-Navigation.displayName = 'Navigation'
 export default Navigation

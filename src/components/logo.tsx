@@ -11,7 +11,7 @@ const Logo: FC = () => {
           alt="Logo"
           fill
           priority
-          className="object-contain invert-0 transition-all duration-200 dark:invert"
+          className="object-contain invert-0 transition-all duration-200"
         />
       </div>
     </Link>

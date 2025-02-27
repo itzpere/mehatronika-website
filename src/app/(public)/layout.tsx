@@ -29,10 +29,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="hr" suppressHydrationWarning className="antialiased">
+    <html lang="sr" suppressHydrationWarning className="antialiased">
       <head />
       <body className="min-h-screen bg-background text-text font-sans selection:bg-primary/10">
-        <Toaster position="bottom-right" closeButton richColors expand theme="system" />
+        <Toaster position="bottom-right" closeButton richColors />
         <main>{children}</main>
         <Analytics mode="production" />
       </body>

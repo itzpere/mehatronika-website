@@ -48,10 +48,9 @@ export const Files: CollectionConfig = {
       type: 'array',
       fields: [
         {
-          name: 'betterAuthUserId',
+          name: 'likeBetterAuthUserId',
           type: 'text',
           required: true,
-          unique: true,
         },
         {
           name: 'createdAt',
@@ -71,7 +70,7 @@ export const Files: CollectionConfig = {
       type: 'array',
       fields: [
         {
-          name: 'betterAuthUserId',
+          name: 'reportBetterAuthUserId',
           type: 'text',
           required: true,
         },
@@ -81,20 +80,6 @@ export const Files: CollectionConfig = {
           required: true,
         },
       ],
-    },
-    {
-      name: 'likeCount',
-      type: 'number',
-      admin: {
-        readOnly: true,
-      },
-      hooks: {
-        beforeChange: [
-          async ({ data }) => {
-            return data?.likes?.length || 0
-          },
-        ],
-      },
     },
     {
       name: 'deleted',

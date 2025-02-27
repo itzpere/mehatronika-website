@@ -1,7 +1,5 @@
 @import 'tailwindcss';
 
-@custom-variant dark (&:is(.dark *));
-
 @plugin '@tailwindcss/typography';
 
 @theme {
@@ -56,6 +54,27 @@
   opacity: 0;
 }
 
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(20deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(15deg); }
+}
+
+.animate-wave {
+  animation: wave 2.5s infinite;
+  display: inline-block;
+  transform-origin: bottom right;
+}
+
+.perspective-text {
+  perspective: 800px;
+  transform-style: preserve-3d;
+}
+
+.perspective-text span {
+  display: inline-block;
+}
 @layer utilities {
   .animate-on-scroll {
     opacity: 0;
@@ -65,6 +84,17 @@
     opacity: 1;
     transform: translate(0, 0);
   }
+}
+@keyframes heartbeat {
+  0% { transform: scale(1.25); }
+  25% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  75% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 0.5s ease-in-out;
 }
 /* :root {
   --background: hsl(0 0% 100%);

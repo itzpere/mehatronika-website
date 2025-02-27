@@ -17,32 +17,34 @@ export const metadata = {
 
 export default function ScriptsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid h-screen grid-rows-[auto_1fr] overflow-hidden">
-      <Header className="border-b border-black" />
+    <div className="flex flex-col h-screen overflow-hidden">
+      <Header className="border-b border-black sticky top-0 z-50 bg-background" />
 
       <SidebarProvider>
-        <main className="grid grid-cols-[auto_1fr] min-h-0 w-full">
-          <AppSidebar />
+        <main className="flex flex-1 min-h-0 w-full">
+          <AppSidebar className="hidden md:block" />
 
-          <SidebarInset className="relative isolate">
+          <SidebarInset className="relative isolate flex-1 w-full">
             <BreadcrumbHeader
-              className="fixed top-20 z-20 bg-background w-full"
+              className="sticky top-0 z-20 bg-background w-full border-b border-sidebar-border shadow-sm"
               aria-label="Page navigation"
             />
 
-            <div className="relative h-[calc(100vh-5rem)]">
-              {/* Top gradient fade */}
-              <div
-                className="absolute inset-x-0 top-36 h-2 bg-gradient-to-b from-background via-background/50 to-transparent z-10"
-                role="presentation"
-              />
+            <div className="relative h-[calc(100vh-5rem)] w-full">
+              {/* Main content with improved scrolling experience */}
+              <div className="h-full overflow-y-auto scroll-smooth scrollbar-thin scrollbar-thumb-sidebar-border scrollbar-track-transparent px-3 sm:px-4 md:px-6 lg:px-8 overscroll-contain">
+                {/* Appear animation for content */}
+                <div className="animate-fade-up pb-safe">{children}</div>
 
-              {/* Main content */}
-              <div className="h-full pt-36 overflow-y-auto scroll-smooth">{children}</div>
+                {/* Navigation hints for new users */}
+                <div className="mt-8 mb-12 sm:mt-10 sm:mb-16 opacity-70 text-sm text-center text-muted-foreground">
+                  <p>Koristite navigaciju ili pretragu za pronalaženje materijala</p>
+                </div>
+              </div>
 
               {/* Bottom gradient fade */}
               <div
-                className="absolute inset-x-0 bottom-0 h-2 bg-gradient-to-t from-background via-background/50 to-transparent"
+                className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-background via-background/50 to-transparent pointer-events-none"
                 role="presentation"
               />
             </div>

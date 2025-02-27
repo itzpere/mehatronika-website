@@ -2,7 +2,7 @@
 import { SiGoogle } from '@icons-pack/react-simple-icons'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth/auth-client'
 import { cn } from '@/lib/utils/cn'
-
 
 const loginSchema = z.object({
   email: z.string().email('Unesite validnu email adresu'),
@@ -50,6 +49,13 @@ function FormInput({
           error && 'border-error hover:border-error',
           isSubmitted && error && 'animate-shake',
         )}
+        autoComplete={
+          props.id === 'email'
+            ? 'username'
+            : props.id === 'password'
+              ? 'current-password'
+              : undefined
+        }
       />
       {error && <p className="text-sm text-error">{error}</p>}
     </div>
@@ -62,6 +68,24 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [animationKey, setAnimationKey] = useState(0)
   const router = useRouter()
+
+  useEffect(() => {
+    // Check for browser autofill after a short delay
+    const timer = setTimeout(() => {
+      const emailInput = document.getElementById('email') as HTMLInputElement
+      const passwordInput = document.getElementById('password') as HTMLInputElement
+
+      if (emailInput?.value && emailInput.value !== formData.email) {
+        setFormData((prev) => ({ ...prev, email: emailInput.value }))
+      }
+
+      if (passwordInput?.value && passwordInput.value !== formData.password) {
+        setFormData((prev) => ({ ...prev, password: passwordInput.value }))
+      }
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [formData.email, formData.password])
 
   const validateField = (field: keyof LoginFormData, value: string) => {
     const result = loginSchema.shape[field].safeParse(value)
@@ -104,7 +128,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
       if (error) throw error
 
-      router.push('/dashboard')
+      router.push('/')
       router.refresh()
     } catch {
       setErrors({
@@ -171,11 +195,12 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
               <Button
                 variant="outline"
                 className="w-full"
+                disabled
                 onClick={async () => {
                   try {
                     const promise = authClient.signIn.social({
                       provider: 'google',
-                      callbackURL: '/dashboard',
+                      callbackURL: '/',
                       errorCallbackURL: '/login?error=auth-failed',
                       newUserCallbackURL: '/welcome',
                     })
