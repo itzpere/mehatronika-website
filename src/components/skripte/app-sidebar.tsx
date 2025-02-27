@@ -49,7 +49,7 @@ async function getNavItems() {
 
   return tree
 }
-
+//TODO: add last changed at top header
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const navMain = await getNavItems()
 
