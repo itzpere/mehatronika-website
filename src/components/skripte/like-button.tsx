@@ -1,10 +1,11 @@
 'use client'
 
-import { ArrowUp } from 'lucide-react'
+import { Heart, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/custom-toast'
+import { cn } from '@/lib/utils/cn'
 import { handleLike } from './likes'
 
 interface LikeButtonProps {
@@ -21,12 +22,12 @@ export function LikeButton({
   isLiked: initialIsLiked,
 }: LikeButtonProps) {
   const router = useRouter()
-
   const [likeState, setLikeState] = useState({
     likes: initialLikes,
     isLiked: initialIsLiked,
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [justLiked, setJustLiked] = useState(false)
 
   const onClick = async () => {
     if (!betterAuthUserID) {
@@ -60,20 +61,47 @@ export function LikeButton({
     } finally {
       setIsLoading(false)
     }
+
+    // Add animation trigger
+    if (!likeState.isLiked) {
+      setJustLiked(true)
+      setTimeout(() => setJustLiked(false), 500)
+    }
   }
 
   return (
     <Button
       variant="ghost"
       size="sm"
-      className="flex items-center gap-1 px-2"
+      className={cn(
+        'flex items-center gap-1.5 px-2 rounded-full transition-all duration-200',
+        likeState.isLiked && 'bg-red-50/20 hover:bg-red-200/30 text-red-500',
+        !likeState.isLiked && 'hover:bg-muted hover:text-red-400',
+      )}
       onClick={onClick}
       disabled={isLoading}
     >
-      <ArrowUp
-        className={`w-4 h-4 ${likeState.isLiked ? 'fill-primary text-primary' : 'text-muted-foreground'}`}
-      />
-      <span className="text-xs">{likeState.likes}</span>
+      {isLoading ? (
+        <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+      ) : (
+        <Heart
+          className={cn(
+            'w-3.5 h-3.5 transition-all duration-200',
+            likeState.isLiked
+              ? 'fill-red-500 text-red-500'
+              : 'text-muted-foreground hover:scale-110 group-hover:text-red-500',
+            justLiked && 'scale-125 animate-heartbeat',
+          )}
+        />
+      )}
+      <span
+        className={cn(
+          'text-xs font-medium',
+          likeState.isLiked ? 'text-red-500' : 'text-muted-foreground group-hover:text-red-500',
+        )}
+      >
+        {likeState.likes}
+      </span>
     </Button>
   )
 }

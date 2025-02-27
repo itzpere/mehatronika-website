@@ -54,7 +54,7 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
   const navMain = await getNavItems()
 
   return (
-    <Sidebar {...props} className="top-20 z-40 py-4 shadow-sm">
+    <Sidebar {...props} className="top-20 z-100 py-4 shadow-sm">
       <SidebarHeader className="px-4">
         <div className="flex items-center gap-2 mb-2 animate-fade-up">
           <div className="p-2 rounded-md bg-sidebar-accent">
@@ -113,25 +113,22 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
                                 style={{ '--animation-delay': '0.05s' } as React.CSSProperties}
                               >
                                 <SidebarMenuSub>
-                                  {subItem.items
-                                    .slice()
-                                    .reverse()
-                                    .map((deepItem) => (
-                                      <SidebarMenuSubItem key={deepItem.title}>
-                                        <SidebarMenuSubButton
-                                          asChild
-                                          className="h-auto min-h-[1.75rem] py-1.5 whitespace-normal hover:bg-sidebar-accent/60 transition-all hover:pl-1 group/item"
+                                  {subItem.items.slice().map((deepItem) => (
+                                    <SidebarMenuSubItem key={deepItem.title}>
+                                      <SidebarMenuSubButton
+                                        asChild
+                                        className="h-auto min-h-[1.75rem] py-1.5 whitespace-normal hover:bg-sidebar-accent/60 transition-all hover:translate-x-1 group/item"
+                                      >
+                                        <Link
+                                          href={'/skripte/' + deepItem.url}
+                                          className="flex items-start w-full pr-2"
+                                          title={deepItem.title}
                                         >
-                                          <Link
-                                            href={'/skripte/' + deepItem.url}
-                                            className="flex items-start w-full pr-2"
-                                            title={deepItem.title}
-                                          >
-                                            {deepItem.title}
-                                          </Link>
-                                        </SidebarMenuSubButton>
-                                      </SidebarMenuSubItem>
-                                    ))}
+                                          {deepItem.title}
+                                        </Link>
+                                      </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                  ))}
                                 </SidebarMenuSub>
                               </CollapsibleContent>
                             )}
