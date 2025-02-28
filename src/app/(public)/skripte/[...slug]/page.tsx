@@ -20,6 +20,7 @@ import {
   isFile,
   processFiles,
   getContentsByPath,
+  extractFileTags,
 } from '@/components/skripte/file-utils'
 import { FileViewer } from '@/components/skripte/file-viewer'
 import { LikeButton } from '@/components/skripte/like-button'
@@ -34,6 +35,16 @@ import { getLikeStatus } from '@/components/skripte/likes'
 import { auth } from '@/lib/auth/auth'
 import type { File as PayloadFile } from '@/payload-types'
 import Loading from './loading'
+
+// Add this helper function near the top of file
+const formatFileSize = (bytes: number | undefined): string => {
+  if (!bytes) return ''
+
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
+}
 
 interface MdFileCardProps {
   file: PayloadFile & { title: string; description: string }
@@ -88,6 +99,7 @@ const FileListItem = async ({ file, path }: { file: PayloadFile; path: string })
   )
 
   const fileName = file.name
+  const { displayName, tags } = extractFileTags(fileName)
   const fileUrl = `/skripte/${path}/${encodeURIComponent(fileName)}`
   const shareId = process.env.NEXT_PUBLIC_NEXTCLOUD_SHARE_ID
   const cleanPath = path
@@ -108,17 +120,17 @@ const FileListItem = async ({ file, path }: { file: PayloadFile; path: string })
     : ''
 
   return (
-    <div className="flex items-center gap-1 sm:gap-2 group w-full">
+    <div className="flex items-center gap-1.5 sm:gap-3 group w-full">
       {/* Make left side shrinkable with min-width */}
-      <div className="h-14 rounded-lg bg-muted/50 flex-1 flex items-center px-2 sm:px-4 hover:bg-muted transition-all duration-200 min-w-0">
-        <Link href={fileUrl} className="flex items-center w-full py-2 min-w-0">
+      <div className="min-h-14 h-auto rounded-lg bg-muted/50 flex-1 flex items-center px-2 sm:px-4 hover:bg-muted transition-all duration-200 min-w-0">
+        <Link href={fileUrl} className="flex items-center w-full py-2.5 min-w-0">
           {/* Make icon fixed size */}
           <div className="flex-shrink-0 flex items-center justify-center w-8 sm:w-10 h-8 sm:h-10 mr-2 sm:mr-3">
             {isImage(fileName) ? (
               <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded overflow-hidden bg-muted">
                 <Image
                   src={`/api/thumbnail?path=${encodeURIComponent(`${path}/${fileName}`)}`}
-                  alt={fileName}
+                  alt={displayName}
                   fill
                   className="object-cover"
                   sizes="(max-width: 640px) 32px, 40px"
@@ -140,19 +152,33 @@ const FileListItem = async ({ file, path }: { file: PayloadFile; path: string })
           {/* Force this to shrink first */}
           <div className="min-w-0 flex-1 overflow-hidden">
             <div className="font-medium text-xs sm:text-sm truncate group-hover:text-primary transition-colors">
-              {fileName}
+              {displayName}
             </div>
             <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
               <span className="hidden xs:inline">{formattedDate}</span>
               <span className="xs:hidden">{formattedDate.split(',')[0]}</span>
-              {file.size && <span>{Math.round(file.size / 1024)} KB</span>}
+              {file.size && <span className="italic">{formatFileSize(file.size)}</span>}
+
+              {/* Display tags if available */}
+              {tags.length > 0 && (
+                <div className="flex gap-1 ml-1 flex-wrap">
+                  {tags.map((tag, i) => (
+                    <span
+                      key={i}
+                      className="px-1.5 py-0.5 bg-primary/10 text-primary rounded-full text-[8px] sm:text-[10px] leading-none"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </Link>
       </div>
 
       {/* Add fixed width to prevent squeezing on small screens */}
-      <div className="flex-shrink-0 flex items-center gap-1 sm:gap-2">
+      <div className="flex-shrink-0 flex items-center gap-1.5 sm:gap-3">
         <LikeButton
           betterAuthUserID={session?.user?.id ?? ''}
           userUUID={file.uuid}
@@ -165,7 +191,7 @@ const FileListItem = async ({ file, path }: { file: PayloadFile; path: string })
           download={fileName}
           className="p-2 rounded-full hover:bg-muted hover:scale-110 transition-all"
           title="Download"
-          aria-label={`Download ${fileName}`}
+          aria-label={`Download ${displayName}`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -225,7 +251,6 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
                   </div>
                 </>
               )}
-
               <div className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4">
                 {/* Directories */}
                 <Suspense>
@@ -244,16 +269,7 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
                 {/* Unknown MD files */}
                 <Suspense>
                   {unknownMdFiles.map((file, index) => (
-                    <Link
-                      key={index}
-                      href={`/skripte/${path}/${encodeURIComponent(file.name)}`}
-                      className="h-11 sm:h-12 rounded-lg bg-muted/50 flex items-center px-3 sm:px-4 hover:bg-muted/70 transition-colors"
-                    >
-                      <FileTextIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-muted-foreground" />
-                      <span className="truncate text-sm sm:text-base">
-                        {file.name.replace('.md', '')}
-                      </span>
-                    </Link>
+                    <FileListItem key={index} file={file} path={path} />
                   ))}
                 </Suspense>
 

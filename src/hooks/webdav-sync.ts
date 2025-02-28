@@ -24,18 +24,82 @@ export async function syncFilesFromWebDAV(): Promise<void> {
   // Cache to prevent duplicate folder lookups
   const folderCache = new Map<string, number>()
 
+  // Add batching and throttling
+  const BATCH_SIZE = 25
+  const DELAY_BETWEEN_BATCHES = 1000 // 1 second
+
+  // Sleep helper
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+  const MAX_RETRIES = 3
+  const RETRY_DELAY = 2000
+
+  // Retry wrapper function
+  async function withRetry<T>(operation: () => Promise<T>, name: string): Promise<T> {
+    let lastError
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        return await operation()
+      } catch (error) {
+        lastError = error
+        console.warn(
+          `Attempt ${attempt}/${MAX_RETRIES} failed for ${name}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        )
+        if (attempt < MAX_RETRIES) {
+          // Exponential backoff
+          const delay = RETRY_DELAY * Math.pow(2, attempt - 1)
+          await sleep(delay)
+        }
+      }
+    }
+    throw lastError
+  }
+
+  // Process items in batches with delay
+  async function processSequentially<T>(
+    items: T[],
+    processFunc: (item: T) => Promise<void>,
+    batchSize = BATCH_SIZE,
+  ) {
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize)
+      console.log(
+        `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(items.length / batchSize)}`,
+      )
+
+      // Process items one by one instead of using Promise.all
+      for (const item of batch) {
+        try {
+          await processFunc(item)
+        } catch (err) {
+          console.error(`Error processing item:`, err)
+        }
+      }
+
+      // Give DB breathing room between batches
+      if (i + batchSize < items.length) {
+        await sleep(DELAY_BETWEEN_BATCHES)
+      }
+    }
+  }
+
   // Get folder ID from cache or database
   async function getFolderFromCache(path: string): Promise<number> {
     if (folderCache.has(path)) {
       return folderCache.get(path)!
     }
 
-    // Look up folder in database
-    const folder = await payload.find({
-      collection: 'folders',
-      where: { currentPath: { equals: path } },
-      limit: 1000,
-    })
+    // Look up folder in database with retry
+    const folder = await withRetry(
+      () =>
+        payload.find({
+          collection: 'folders',
+          where: { currentPath: { equals: path } },
+          limit: 1000,
+        }),
+      `getFolderFromCache(${path})`,
+    )
+
     const uuid = folder.docs[0]?.uuid ?? 0
     folderCache.set(path, uuid)
     return uuid
@@ -194,29 +258,117 @@ export async function syncFilesFromWebDAV(): Promise<void> {
     return files.filter((file) => !file.filename.includes('.git/'))
   }
 
-  // Main sync process
+  // Main sync process with batching
+  //ovo nema smisla dao sam mu da radi u batches da nebi radio tolko brzo i preopteretio databazu
+  // i on je odradio ceo poso 40% brze!
+  // volim programiranje
   try {
     console.log('Started syncing files from WebDAV')
     const allFiles = await getAllFiles()
     console.log(`Found ${allFiles.length} files`)
 
-    // Process folders first to ensure parent folders exist
-    for (const file of allFiles) {
-      if (file.type === 'directory') {
-        console.log('folder:', file.filename)
-        await mapFolderToDatabase(file)
-      }
-    }
-    console.log('folders done')
+    // Process folders in batches
+    const folders = allFiles.filter((file) => file.type === 'directory')
+    console.log(`Processing ${folders.length} folders in batches`)
+    await processSequentially(folders, mapFolderToDatabase)
+    console.log('Folders done')
 
-    // Then process files
-    for (const file of allFiles) {
-      if (file.type === 'file') {
-        console.log('file:', file.filename)
-        await mapFilesToDatabase(file)
-      }
-    }
+    // Process files in batches
+    const files = allFiles.filter((file) => file.type === 'file')
+    console.log(`Processing ${files.length} files in batches`)
+    await processSequentially(files, mapFilesToDatabase)
     console.log('Files syncing completed')
+
+    try {
+      // Handle deleted folders
+      const dbFolders = await payload.find({
+        collection: 'folders',
+        where: {
+          deleted: {
+            equals: false,
+          },
+        },
+        limit: 1000,
+      })
+
+      const webdavFolderIds = new Set(
+        allFiles
+          .filter((file) => file.type === 'directory' && file.props?.fileid)
+          .map((file) => file.props!.fileid),
+      )
+
+      const deletedFolders = dbFolders.docs.filter((folder) => !webdavFolderIds.has(folder.uuid))
+      console.log(`Found ${deletedFolders.length} deleted folders to mark`)
+
+      if (deletedFolders.length > 0) {
+        await processSequentially(deletedFolders, async (folder) => {
+          await payload.update({
+            collection: 'folders',
+            id: folder.id,
+            data: { deleted: true },
+          })
+        })
+        console.log('Deleted folders processing complete')
+      }
+    } catch (error) {
+      console.error('Error processing deleted folders:', error)
+    }
+
+    // After processing files and folders
+    try {
+      // Get all files that aren't marked as deleted
+      const dbFiles = await payload.find({
+        collection: 'files',
+        where: {
+          deleted: {
+            equals: false,
+          },
+        },
+        limit: 1000,
+      })
+
+      // Create lookup set of fileIds from WebDAV
+      const webdavFileIds = new Set(
+        allFiles.filter((file) => file.props?.fileid).map((file) => file.props!.fileid),
+      )
+
+      // Find files that exist in DB but not in WebDAV
+      const deletedFiles = dbFiles.docs.filter((file) => !webdavFileIds.has(file.uuid))
+
+      console.log(`Found ${deletedFiles.length} deleted files to mark`)
+
+      // Mark them as deleted in batches
+      if (deletedFiles.length > 0) {
+        const batchSize = BATCH_SIZE * 2 // We can use larger batches for simple updates
+
+        for (let i = 0; i < deletedFiles.length; i += batchSize) {
+          const batch = deletedFiles.slice(i, i + batchSize)
+          console.log(
+            `Processing deleted batch ${i / batchSize + 1}/${Math.ceil(deletedFiles.length / batchSize)}`,
+          )
+
+          await Promise.all(
+            batch.map((file) =>
+              payload
+                .update({
+                  collection: 'files',
+                  id: file.id,
+                  data: { deleted: true },
+                })
+                .catch((err) => console.error(`Error marking file ${file.uuid} as deleted:`, err)),
+            ),
+          )
+
+          // Breathing room
+          if (i + batchSize < deletedFiles.length) {
+            await sleep(DELAY_BETWEEN_BATCHES)
+          }
+        }
+        console.log('Deleted files processing complete')
+      }
+    } catch (error) {
+      console.error('Error processing deleted files:', error)
+    }
   } catch (error) {
     console.error('Error syncing files:', error)
     throw error
