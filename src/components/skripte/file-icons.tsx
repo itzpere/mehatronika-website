@@ -37,6 +37,8 @@ export const getFileIcon = (filename: string) => {
     case 'ppt':
     case 'pptx':
       return <FileTextIcon className="w-5 h-5 mr-2 text-orange-500" />
+    case 'md':
+      return <FileTextIcon className="w-5 h-5 mr-2 text-gray-700" />
     case 'odt':
     case 'rtf':
       return <FilePenLineIcon className="w-5 h-5 mr-2 text-blue-400" />

@@ -2,7 +2,7 @@ import { LRUCache } from 'lru-cache'
 import { createClient, WebDAVClient } from 'webdav'
 
 export const publicDavClient: WebDAVClient = createClient(
-  `${process.env.NEXTCLOUD_URL}/public.php/webdav/`,
+  `${process.env.NEXT_PUBLIC_NEXTCLOUD_URL || 'https://cloud.itzpere.com'}/public.php/webdav/`,
   {
     username: process.env.NEXT_PUBLIC_NEXTCLOUD_SHARE_ID || '',
     password: '',

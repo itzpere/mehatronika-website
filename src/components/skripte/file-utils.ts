@@ -180,3 +180,26 @@ export const isVideo = (filename: string) => {
   const ext = filename.split('.').pop()?.toLowerCase()
   return ext ? VIDEO_EXTENSIONS.has(ext) : false
 }
+
+// Add this function to extract tags from filenames
+export function extractFileTags(filename: string): {
+  displayName: string
+  tags: string[]
+} {
+  const tagPattern = /^(.+)__tags__(.+?)(\.[^.]+)?$/
+  const match = filename.match(tagPattern)
+
+  if (match) {
+    const [, baseName, tagString, extension = ''] = match
+    const tags = tagString.split('_').filter(Boolean)
+    return {
+      displayName: `${baseName}${extension}`,
+      tags,
+    }
+  }
+
+  return {
+    displayName: filename,
+    tags: [],
+  }
+}
