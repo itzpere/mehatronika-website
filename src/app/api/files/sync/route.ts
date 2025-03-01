@@ -2,7 +2,7 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { syncFilesFromWebDAV } from '@/hooks/webdav-sync'
 
-export const maxDuration = 300 // Set to 300 seconds (5 minutes)
+export const maxDuration = 60 // Set to 300 seconds (5 minutes)
 export const preferredRegion = 'auto'
 
 export async function GET(_request: Request) {
