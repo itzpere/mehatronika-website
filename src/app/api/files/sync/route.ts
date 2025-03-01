@@ -2,16 +2,16 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { syncFilesFromWebDAV } from '@/hooks/webdav-sync'
 
-// Get these from environment variables
+export const maxDuration = 300 // Set to 300 seconds (5 minutes)
+export const preferredRegion = 'auto'
 
 export async function GET(_request: Request) {
-  console.error('==== SYNC ENDPOINT CALLED ====') // Will show in Vercel logs
+  console.error('==== SYNC ENDPOINT CALLED ====')
 
-  const headersList = await headers()
+  const headersList = headers()
   const providedApiKey = headersList.get('x-api-key')
   console.error(`API Key check: ${!!providedApiKey} vs ${!!process.env.SYNC_API_KEY}`)
 
-  // Security checks
   if (!process.env.SYNC_API_KEY) {
     console.error('Missing SYNC_API_KEY in environment')
     return NextResponse.json(
@@ -28,36 +28,22 @@ export async function GET(_request: Request) {
   console.error('==== STARTING SYNC FUNCTION ====')
 
   try {
-    // Start sync and immediately return
-    const syncPromise = syncFilesFromWebDAV()
-
-    // Add explicit debug points in the promise chain
-    syncPromise
-      .then(() => console.error('==== SYNC COMPLETED SUCCESSFULLY ===='))
-      .catch((error) => console.error('==== SYNC FAILED ====', error))
+    // Actually wait for the function to complete
+    await syncFilesFromWebDAV()
+    console.error('==== SYNC COMPLETED SUCCESSFULLY ====')
 
     return NextResponse.json({
       success: true,
-      message: 'Sync triggered - check logs for progress',
+      message: 'Sync completed successfully',
     })
   } catch (error) {
-    console.error('==== IMMEDIATE ERROR STARTING SYNC ====', error)
+    console.error('==== SYNC FAILED ====', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to start sync process',
+        error: 'Sync process failed',
       },
       { status: 500 },
     )
   }
-}
-
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Methods': 'GET',
-      'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
-    },
-  })
 }
