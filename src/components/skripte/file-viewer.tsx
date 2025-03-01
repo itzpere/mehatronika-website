@@ -3,11 +3,12 @@
 import { ChevronLeft, ChevronRight, Download, ZoomIn, ZoomOut, RotateCw } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
-import { useInView } from 'react-intersection-observer'
 import ReactMarkdown from 'react-markdown'
 import { Document, Page, pdfjs } from 'react-pdf'
+import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import { Button } from '@/components/ui/button'
+// Add these if you need more features
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -35,11 +36,6 @@ export function FileViewer({ path, extension }: FileViewerProps) {
 
   const fileUrl = `https://cloud.itzpere.com/s/${shareId}/download?path=/${encodeURIComponent(cleanPath)}/${filename}`
   const mdUrl = `/api/markdown?path=${encodeURIComponent(cleanPath)}&filename=${filename}`
-
-  const { ref, inView } = useInView({
-    threshold: 0.1,
-    triggerOnce: true,
-  })
 
   useEffect(() => {
     if (extension === 'md') {
@@ -193,110 +189,8 @@ export function FileViewer({ path, extension }: FileViewerProps) {
 
     return (
       <div className="container mx-auto">
-        <article
-          className="prose prose-slate max-w-none p-8
-          prose-headings:scroll-mt-20 prose-headings:font-bold prose-headings:tracking-tight 
-          prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl
-          prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-          prose-img:rounded-lg prose-img:shadow-md prose-img:mx-auto
-          prose-strong:text-foreground prose-strong:font-bold
-          prose-ul:list-disc prose-ol:list-decimal
-          [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
-        >
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              // Improved code block rendering with syntax highlighting
-              code({
-                _node,
-                inline,
-                className,
-                children,
-                ...props
-              }: {
-                _node?: any
-                inline?: boolean
-                className?: string
-                children?: React.ReactNode
-                [key: string]: any
-              }) {
-                const match = /language-(\w+)/.exec(className || '')
-                const language = match ? match[1] : ''
-
-                return !inline ? (
-                  <div className="relative group">
-                    {language && (
-                      <div className="absolute right-2 top-2 text-xs px-2 py-1 rounded bg-muted/70 text-muted-foreground">
-                        {language}
-                      </div>
-                    )}
-                    <pre
-                      className={`${className} rounded-lg p-4 overflow-x-auto bg-muted/50 border border-border`}
-                    >
-                      <code {...props}>{children}</code>
-                    </pre>
-                    <button
-                      onClick={() => navigator.clipboard.writeText(String(children))}
-                      className="absolute opacity-0 group-hover:opacity-100 right-2 bottom-2 text-xs 
-                                px-2 py-1 rounded bg-primary/10 text-primary transition-opacity"
-                      aria-label="Copy code"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                ) : (
-                  <code className="bg-muted/30 text-primary px-1 py-0.5 rounded text-sm" {...props}>
-                    {children}
-                  </code>
-                )
-              },
-              // Interactive checkboxes
-              li({
-                _node,
-                _className,
-                checked,
-                children,
-                ...props
-              }: {
-                _node?: any
-                _className?: string
-                checked?: boolean
-                children?: React.ReactNode
-                [key: string]: any
-              }) {
-                if (checked !== null && checked !== undefined) {
-                  return (
-                    <li {...props} className="flex items-center gap-2">
-                      <input type="checkbox" checked={checked} readOnly className="mt-0" />
-                      <span>{children}</span>
-                    </li>
-                  )
-                }
-                return <li {...props}>{children}</li>
-              },
-              // Better blockquotes
-              blockquote({ children, ...props }) {
-                return (
-                  <blockquote
-                    className="border-l-4 border-l-primary bg-muted/30 pl-4 py-1 italic text-muted-foreground"
-                    {...props}
-                  >
-                    {children}
-                  </blockquote>
-                )
-              },
-              // Better table rendering
-              table({ children }) {
-                return (
-                  <div className="overflow-x-auto">
-                    <table className="border-collapse border border-border w-full">
-                      {children}
-                    </table>
-                  </div>
-                )
-              },
-            }}
-          >
+        <article className="prose prose-slate max-w-none p-8 prose-headings:scroll-mt-20 prose-headings:font-bold prose-headings:tracking-tight">
+          <ReactMarkdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>
             {markdown}
           </ReactMarkdown>
         </article>
