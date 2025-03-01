@@ -292,6 +292,15 @@ export async function syncFilesFromWebDAV(): Promise<void> {
   try {
     log('Starting optimized sync from WebDAV')
 
+    // Set lock at the beginning
+    await payload.updateGlobal({
+      slug: 'syncLock',
+      data: {
+        isRunning: true,
+        lastSync: new Date().toISOString(),
+      },
+    })
+
     // Get existing DB items and WebDAV items in parallel
     const [{ folderMap, fileMap, pathToFolderMap, pathToFileMap }, allFiles] = await Promise.all([
       fetchExistingItems(),
@@ -406,5 +415,13 @@ export async function syncFilesFromWebDAV(): Promise<void> {
   } catch (error) {
     console.error('Error syncing files:', error)
     throw error
+  } finally {
+    // Always release lock when done, even if there was an error
+    await payload.updateGlobal({
+      slug: 'syncLock',
+      data: {
+        isRunning: false,
+      },
+    })
   }
 }

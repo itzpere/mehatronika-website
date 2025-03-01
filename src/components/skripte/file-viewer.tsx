@@ -58,15 +58,15 @@ export function FileViewer({ path, extension }: FileViewerProps) {
   const ErrorUI = ({ message }: { message: string }) => (
     <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-8 text-center">
       <div className="text-destructive mb-2 text-2xl">⚠️</div>
-      <h3 className="font-medium mb-1">Error Loading File</h3>
+      <h3 className="font-medium mb-1">Greška pri učitavanju fajla</h3>
       <p className="text-sm text-muted-foreground mb-4">{message}</p>
       <Button variant="outline" onClick={() => window.location.reload()}>
-        Try Again
+        Pokušaj ponovo
       </Button>
       <Button variant="ghost" className="ml-2" asChild>
         <a href={fileUrl} download>
           <Download className="mr-2 h-4 w-4" />
-          Download Instead
+          Preuzmi
         </a>
       </Button>
     </div>
