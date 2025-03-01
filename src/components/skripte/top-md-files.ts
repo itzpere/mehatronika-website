@@ -6,24 +6,26 @@ export interface MDFileInfo {
 
 export const mdFileInfo: MDFileInfo[] = [
   {
-    filename: 'Pregled.md',
-    title: 'Pregled',
+    filename: 'opste_informacije.md',
+    title: 'Opšte Informacije',
     description:
-      'Osnovne informacije o predmetu koje pomažu studentima da brzo shvate šta očekivati.',
+      'Osnovne informacije o predmetu - ESPB bodovi, nastavno osoblje, struktura bodovanja i ključni detalji.',
   },
   {
-    filename: 'NastavniPlan.md',
-    title: 'Nastavni Plan',
-    description: 'Detaljan raspored aktivnosti i gradiva koje student mora da savlada.',
+    filename: 'literatura.md',
+    title: 'Literatura',
+    description:
+      'Obavezna i dopunska literatura sa linkovima ka resursima i lokacijama u biblioteci.',
   },
   {
-    filename: 'Materijali.md',
-    title: 'Materijali',
-    description: 'Svi resursi na jednom mestu – od snimaka do zadataka za vežbu.',
+    filename: 'priprema_za_ispit.md',
+    title: 'Priprema za Ispit',
+    description:
+      'Arhiva prošlih ispita, rešeni zadaci, bonus materijali i korisni alati za vežbanje.',
   },
   {
-    filename: 'IskustvaSaveti.md',
-    title: 'Iskustva i Saveti',
-    description: 'Praksa proverena generacijama – šta stariji studenti žele da su znali.',
+    filename: 'iskustva_studenata.md',
+    title: 'Iskustva Studenata',
+    description: 'Saveti, strategije i upozorenja od studenata koji su već položili predmet.',
   },
 ]

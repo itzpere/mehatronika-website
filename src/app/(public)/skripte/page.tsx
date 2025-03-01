@@ -1,7 +1,13 @@
 import { getPayload } from 'payload'
 import { syncFilesFromWebDAV } from '@/hooks/webdav-sync'
 import configPromise from '@payload-config'
-
+//moralo je ovde da boravi file sync zato sto vercel ne daje da se koristi njihov cronjob
+//za planove koji nisu bar pro i takodje kad sam probao sa eksternog servera da pingam api
+//logicno da je vercel blokirao apsolutno requist i da nije teo uopste da radi
+//5 sati debugovanja kasnije ovo je doslo na red tkd bolje ista nego nista
+//ocigledno ce biti problema u vezi toga da ljudi dodju na sajt i nema novih skripti ali
+//to je neki problem za kasnije
+//FIXME: pls
 export default async function Page() {
   const payload = await getPayload({
     config: configPromise,
