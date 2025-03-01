@@ -2,6 +2,17 @@ import { getPayload } from 'payload'
 import { publicDavClient } from '@/lib/utils/public-webdav'
 import configPromise from '@payload-config'
 
+function log(message: string, data?: any) {
+  const timestamp = new Date().toISOString()
+  const fullMsg = `[WEBDAV-SYNC ${timestamp}] ${message}`
+
+  if (data) {
+    log(fullMsg, JSON.stringify(data))
+  } else {
+    log(fullMsg)
+  }
+}
+
 // Interface representing WebDAV file/folder structure from server response
 interface WebDAVFile {
   filename: string // Full path including filename
@@ -63,7 +74,7 @@ export async function syncFilesFromWebDAV(): Promise<void> {
   ) {
     for (let i = 0; i < items.length; i += batchSize) {
       const batch = items.slice(i, i + batchSize)
-      console.log(
+      log(
         `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(items.length / batchSize)}`,
       )
 
@@ -263,21 +274,21 @@ export async function syncFilesFromWebDAV(): Promise<void> {
   // i on je odradio ceo poso 40% brze!
   // volim programiranje
   try {
-    console.log('Started syncing files from WebDAV')
+    log('Started syncing files from WebDAV')
     const allFiles = await getAllFiles()
-    console.log(`Found ${allFiles.length} files`)
+    log(`Found ${allFiles.length} files`)
 
     // Process folders in batches
     const folders = allFiles.filter((file) => file.type === 'directory')
-    console.log(`Processing ${folders.length} folders in batches`)
+    log(`Processing ${folders.length} folders in batches`)
     await processSequentially(folders, mapFolderToDatabase)
-    console.log('Folders done')
+    log('Folders done')
 
     // Process files in batches
     const files = allFiles.filter((file) => file.type === 'file')
-    console.log(`Processing ${files.length} files in batches`)
+    log(`Processing ${files.length} files in batches`)
     await processSequentially(files, mapFilesToDatabase)
-    console.log('Files syncing completed')
+    log('Files syncing completed')
 
     try {
       // Handle deleted folders
@@ -298,7 +309,7 @@ export async function syncFilesFromWebDAV(): Promise<void> {
       )
 
       const deletedFolders = dbFolders.docs.filter((folder) => !webdavFolderIds.has(folder.uuid))
-      console.log(`Found ${deletedFolders.length} deleted folders to mark`)
+      log(`Found ${deletedFolders.length} deleted folders to mark`)
 
       if (deletedFolders.length > 0) {
         await processSequentially(deletedFolders, async (folder) => {
@@ -308,7 +319,7 @@ export async function syncFilesFromWebDAV(): Promise<void> {
             data: { deleted: true },
           })
         })
-        console.log('Deleted folders processing complete')
+        log('Deleted folders processing complete')
       }
     } catch (error) {
       console.error('Error processing deleted folders:', error)
@@ -335,7 +346,7 @@ export async function syncFilesFromWebDAV(): Promise<void> {
       // Find files that exist in DB but not in WebDAV
       const deletedFiles = dbFiles.docs.filter((file) => !webdavFileIds.has(file.uuid))
 
-      console.log(`Found ${deletedFiles.length} deleted files to mark`)
+      log(`Found ${deletedFiles.length} deleted files to mark`)
 
       // Mark them as deleted in batches
       if (deletedFiles.length > 0) {
@@ -343,7 +354,7 @@ export async function syncFilesFromWebDAV(): Promise<void> {
 
         for (let i = 0; i < deletedFiles.length; i += batchSize) {
           const batch = deletedFiles.slice(i, i + batchSize)
-          console.log(
+          log(
             `Processing deleted batch ${i / batchSize + 1}/${Math.ceil(deletedFiles.length / batchSize)}`,
           )
 
@@ -364,7 +375,7 @@ export async function syncFilesFromWebDAV(): Promise<void> {
             await sleep(DELAY_BETWEEN_BATCHES)
           }
         }
-        console.log('Deleted files processing complete')
+        log('Deleted files processing complete')
       }
     } catch (error) {
       console.error('Error processing deleted files:', error)

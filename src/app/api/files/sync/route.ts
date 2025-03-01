@@ -8,10 +8,6 @@ export async function GET(_request: Request) {
   const headersList = await headers()
   const providedApiKey = headersList.get('x-api-key')
 
-  // Debug info - check actual values
-  console.log('Provided API Key:', providedApiKey)
-  console.log('Environment API Key exists:', process.env.SYNC_API_KEY)
-
   // Security checks with more detailed errors
   if (!process.env.SYNC_API_KEY) {
     return NextResponse.json(
