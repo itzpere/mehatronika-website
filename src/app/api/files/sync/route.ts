@@ -10,10 +10,8 @@ export async function GET(_request: Request) {
 
   const headersList = await headers()
   const providedApiKey = headersList.get('x-api-key')
-  console.error(`API Key check: ${!!providedApiKey} vs ${!!process.env.SYNC_API_KEY}`)
 
   if (!process.env.SYNC_API_KEY) {
-    console.error('Missing SYNC_API_KEY in environment')
     return NextResponse.json(
       { success: false, error: 'API key not configured on server' },
       { status: 500 },
@@ -21,29 +19,19 @@ export async function GET(_request: Request) {
   }
 
   if (providedApiKey !== process.env.SYNC_API_KEY) {
-    console.error('API key mismatch')
     return NextResponse.json({ success: false, error: 'Invalid API key provided' }, { status: 401 })
   }
 
   console.error('==== STARTING SYNC FUNCTION ====')
 
-  try {
-    // Actually wait for the function to complete
-    await syncFilesFromWebDAV()
-    console.error('==== SYNC COMPLETED SUCCESSFULLY ====')
+  // Start sync but don't await it
+  syncFilesFromWebDAV()
+    .then(() => console.error('==== SYNC COMPLETED SUCCESSFULLY ===='))
+    .catch((e) => console.error('==== SYNC FAILED ====', e))
 
-    return NextResponse.json({
-      success: true,
-      message: 'Sync completed successfully',
-    })
-  } catch (error) {
-    console.error('==== SYNC FAILED ====', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Sync process failed',
-      },
-      { status: 500 },
-    )
-  }
+  // Return immediately
+  return NextResponse.json({
+    success: true,
+    message: 'Sync process triggered in background',
+  })
 }

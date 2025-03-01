@@ -274,7 +274,7 @@ export async function syncFilesFromWebDAV(): Promise<void> {
   // i on je odradio ceo poso 40% brze!
   // volim programiranje
   try {
-    log('Started syncing files from WebDAV')
+    console.error('Started syncing files from WebDAV')
     const allFiles = await getAllFiles()
     log(`Found ${allFiles.length} files`)
 
