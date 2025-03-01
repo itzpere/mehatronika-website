@@ -3,16 +3,25 @@ import { NextResponse } from 'next/server'
 import { syncFilesFromWebDAV } from '@/hooks/webdav-sync'
 
 // Get these from environment variables
-const API_KEY = process.env.SYNC_API_KEY
 
 export async function GET(_request: Request) {
-  // Get IP address
   const headersList = await headers()
   const providedApiKey = headersList.get('x-api-key')
 
-  // Security checks
-  if (!API_KEY || API_KEY !== providedApiKey) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+  // Debug info - check actual values
+  console.log('Provided API Key:', providedApiKey)
+  console.log('Environment API Key exists:', !!process.env.SYNC_API_KEY)
+
+  // Security checks with more detailed errors
+  if (!process.env.SYNC_API_KEY) {
+    return NextResponse.json(
+      { success: false, error: 'API key not configured on server' },
+      { status: 500 },
+    )
+  }
+
+  if (providedApiKey !== process.env.SYNC_API_KEY) {
+    return NextResponse.json({ success: false, error: 'Invalid API key provided' }, { status: 401 })
   }
 
   try {
