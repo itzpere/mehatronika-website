@@ -5,9 +5,8 @@ import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { BlocksFeature, FixedToolbarFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
-import { buildConfig, PayloadRequest } from 'payload'
+import { buildConfig } from 'payload'
 import sharp from 'sharp'
-import { webdavSyncJob } from '@/jobs/webdav-sync'
 import { FileComments } from './content/collections/FileComments'
 import { Files } from './content/collections/Files'
 import { Folders } from './content/collections/Folders'
@@ -63,29 +62,22 @@ export default buildConfig({
     ],
   }),
   sharp,
-  // Run file sync every 5 minutes
-  jobs: {
-    tasks: [webdavSyncJob],
-    autoRun: [
-      {
-        cron: '*/5 * * * *',
-        queue: 'default',
-        limit: 1, // Only one instance at a time
-      },
-    ],
-    access: {
-      run: ({ req }: { req: PayloadRequest }): boolean => {
-        // Allow logged in users to execute this endpoint (default)
-        if (req.user) return true
-
-        // If there is no logged in user, then check
-        // for the Vercel Cron secret to be present as an
-        // Authorization header:
-        const authHeader = req.headers.get('authorization')
-        return authHeader === `Bearer ${process.env.CRON_SECRET}`
-      },
+  globals: [
+    {
+      slug: 'syncLock',
+      fields: [
+        {
+          name: 'isRunning',
+          type: 'checkbox',
+          defaultValue: false,
+        },
+        {
+          name: 'lastSync',
+          type: 'date',
+        },
+      ],
     },
-  },
+  ],
   plugins: [
     payloadCloudPlugin(),
     s3Storage({

@@ -93,8 +93,12 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    syncLock: SyncLock;
+  };
+  globalsSelect: {
+    syncLock: SyncLockSelect<false> | SyncLockSelect<true>;
+  };
   locale: null;
   user: User & {
     collection: 'users';
@@ -645,6 +649,28 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "syncLock".
+ */
+export interface SyncLock {
+  id: number;
+  isRunning?: boolean | null;
+  lastSync?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "syncLock_select".
+ */
+export interface SyncLockSelect<T extends boolean = true> {
+  isRunning?: T;
+  lastSync?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
