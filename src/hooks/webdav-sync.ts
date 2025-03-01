@@ -7,9 +7,9 @@ function log(message: string, data?: any) {
   const fullMsg = `[WEBDAV-SYNC ${timestamp}] ${message}`
 
   if (data) {
-    log(fullMsg, JSON.stringify(data))
+    console.error(fullMsg, JSON.stringify(data))
   } else {
-    log(fullMsg)
+    console.error(fullMsg)
   }
 }
 
@@ -27,17 +27,13 @@ interface WebDAVFile {
 }
 
 export async function syncFilesFromWebDAV(): Promise<void> {
-  // Initialize PayloadCMS client
   const payload = await getPayload({
     config: configPromise,
   })
 
-  // Cache to prevent duplicate folder lookups
   const folderCache = new Map<string, number>()
-
-  // Add batching and throttling
   const BATCH_SIZE = 25
-  const DELAY_BETWEEN_BATCHES = 1000 // 1 second
+  const DELAY_BETWEEN_BATCHES = 1000
 
   // Sleep helper
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -269,117 +265,144 @@ export async function syncFilesFromWebDAV(): Promise<void> {
     return files.filter((file) => !file.filename.includes('.git/'))
   }
 
-  // Main sync process with batching
-  //ovo nema smisla dao sam mu da radi u batches da nebi radio tolko brzo i preopteretio databazu
-  // i on je odradio ceo poso 40% brze!
-  // volim programiranje
-  try {
-    console.error('Started syncing files from WebDAV')
-    const allFiles = await getAllFiles()
-    log(`Found ${allFiles.length} files`)
-
-    // Process folders in batches
-    const folders = allFiles.filter((file) => file.type === 'directory')
-    log(`Processing ${folders.length} folders in batches`)
-    await processSequentially(folders, mapFolderToDatabase)
-    log('Folders done')
-
-    // Process files in batches
-    const files = allFiles.filter((file) => file.type === 'file')
-    log(`Processing ${files.length} files in batches`)
-    await processSequentially(files, mapFilesToDatabase)
-    log('Files syncing completed')
-
-    try {
-      // Handle deleted folders
-      const dbFolders = await payload.find({
+  // New function to fetch all existing files/folders from DB
+  async function fetchExistingItems() {
+    const [dbFolders, dbFiles] = await Promise.all([
+      payload.find({
         collection: 'folders',
-        where: {
-          deleted: {
-            equals: false,
-          },
-        },
+        where: { deleted: { equals: false } },
         limit: 1000,
-      })
-
-      const webdavFolderIds = new Set(
-        allFiles
-          .filter((file) => file.type === 'directory' && file.props?.fileid)
-          .map((file) => file.props!.fileid),
-      )
-
-      const deletedFolders = dbFolders.docs.filter((folder) => !webdavFolderIds.has(folder.uuid))
-      log(`Found ${deletedFolders.length} deleted folders to mark`)
-
-      if (deletedFolders.length > 0) {
-        await processSequentially(deletedFolders, async (folder) => {
-          await payload.update({
-            collection: 'folders',
-            id: folder.id,
-            data: { deleted: true },
-          })
-        })
-        log('Deleted folders processing complete')
-      }
-    } catch (error) {
-      console.error('Error processing deleted folders:', error)
-    }
-
-    // After processing files and folders
-    try {
-      // Get all files that aren't marked as deleted
-      const dbFiles = await payload.find({
+      }),
+      payload.find({
         collection: 'files',
-        where: {
-          deleted: {
-            equals: false,
-          },
-        },
+        where: { deleted: { equals: false } },
         limit: 1000,
-      })
+      }),
+    ])
 
-      // Create lookup set of fileIds from WebDAV
-      const webdavFileIds = new Set(
-        allFiles.filter((file) => file.props?.fileid).map((file) => file.props!.fileid),
-      )
+    // Create maps for quick lookups
+    const folderMap = new Map(dbFolders.docs.map((f) => [f.uuid, f]))
+    const fileMap = new Map(dbFiles.docs.map((f) => [f.uuid, f]))
+    const pathToFolderMap = new Map(dbFolders.docs.map((f) => [f.currentPath, f]))
+    const pathToFileMap = new Map(dbFiles.docs.map((f) => [f.currentPath, f]))
 
-      // Find files that exist in DB but not in WebDAV
-      const deletedFiles = dbFiles.docs.filter((file) => !webdavFileIds.has(file.uuid))
+    return { folderMap, fileMap, pathToFolderMap, pathToFileMap }
+  }
 
-      log(`Found ${deletedFiles.length} deleted files to mark`)
+  try {
+    log('Starting optimized sync from WebDAV')
 
-      // Mark them as deleted in batches
-      if (deletedFiles.length > 0) {
-        const batchSize = BATCH_SIZE * 2 // We can use larger batches for simple updates
+    // Get existing DB items and WebDAV items in parallel
+    const [{ folderMap, fileMap, pathToFolderMap, pathToFileMap }, allFiles] = await Promise.all([
+      fetchExistingItems(),
+      getAllFiles(),
+    ])
 
-        for (let i = 0; i < deletedFiles.length; i += batchSize) {
-          const batch = deletedFiles.slice(i, i + batchSize)
-          log(
-            `Processing deleted batch ${i / batchSize + 1}/${Math.ceil(deletedFiles.length / batchSize)}`,
-          )
+    log(`Found ${allFiles.length} files in WebDAV`)
 
-          await Promise.all(
-            batch.map((file) =>
-              payload
-                .update({
-                  collection: 'files',
-                  id: file.id,
-                  data: { deleted: true },
-                })
-                .catch((err) => console.error(`Error marking file ${file.uuid} as deleted:`, err)),
-            ),
-          )
+    // Sort files into categories based on changes
+    const folders = allFiles.filter((f) => f.type === 'directory' && f.props?.fileid)
+    const files = allFiles.filter((f) => f.type === 'file' && f.props?.fileid)
 
-          // Breathing room
-          if (i + batchSize < deletedFiles.length) {
-            await sleep(DELAY_BETWEEN_BATCHES)
-          }
+    // Track what needs processing
+    const newFolders = []
+    const modifiedFolders = []
+    const newFiles = []
+    const modifiedFiles = []
+    const webdavIdsFound = new Set<number>()
+
+    // Identify new and modified folders
+    for (const folder of folders) {
+      const id = folder.props?.fileid
+      if (!id) continue
+
+      webdavIdsFound.add(id)
+      const existingFolder = folderMap.get(id)
+
+      if (!existingFolder) {
+        newFolders.push(folder)
+      } else {
+        const pathChanged = existingFolder.currentPath !== folder.filename
+        const nameChanged = existingFolder.name !== folder.basename
+
+        if (pathChanged || nameChanged) {
+          modifiedFolders.push(folder)
         }
-        log('Deleted files processing complete')
       }
-    } catch (error) {
-      console.error('Error processing deleted files:', error)
     }
+
+    // Identify new and modified files
+    for (const file of files) {
+      const id = file.props?.fileid
+      if (!id) continue
+
+      webdavIdsFound.add(id)
+      const existingFile = fileMap.get(id)
+
+      if (!existingFile) {
+        newFiles.push(file)
+      } else {
+        const pathChanged = existingFile.currentPath !== file.filename
+        const sizeChanged = existingFile.size !== file.size
+        const dateChanged = existingFile.lastModified !== new Date(file.lastmod).toISOString()
+
+        if (pathChanged || sizeChanged || dateChanged) {
+          modifiedFiles.push(file)
+        }
+      }
+    }
+
+    // Find deleted items (in DB but not in WebDAV)
+    const deletedFolders = Array.from(folderMap.values()).filter(
+      (folder) => !webdavIdsFound.has(folder.uuid),
+    )
+
+    const deletedFiles = Array.from(fileMap.values()).filter(
+      (file) => !webdavIdsFound.has(file.uuid),
+    )
+
+    // Log stats about what needs processing
+    log(`Found ${newFolders.length} new folders, ${modifiedFolders.length} modified folders`)
+    log(`Found ${newFiles.length} new files, ${modifiedFiles.length} modified files`)
+    log(`Found ${deletedFolders.length} deleted folders, ${deletedFiles.length} deleted files`)
+
+    // Process changes in proper order (folders before files, etc.)
+    log('Processing new folders')
+    await processSequentially(newFolders, mapFolderToDatabase)
+
+    log('Processing modified folders')
+    await processSequentially(modifiedFolders, mapFolderToDatabase)
+
+    log('Processing new files')
+    await processSequentially(newFiles, mapFilesToDatabase)
+
+    log('Processing modified files')
+    await processSequentially(modifiedFiles, mapFilesToDatabase)
+
+    // Mark deleted items
+    if (deletedFolders.length) {
+      log('Processing deleted folders')
+      await processSequentially(deletedFolders, async (folder) => {
+        await payload.update({
+          collection: 'folders',
+          id: folder.id,
+          data: { deleted: true },
+        })
+      })
+    }
+
+    if (deletedFiles.length) {
+      log('Processing deleted files')
+      await processSequentially(deletedFiles, async (file) => {
+        await payload.update({
+          collection: 'files',
+          id: file.id,
+          data: { deleted: true },
+        })
+      })
+    }
+
+    log('Sync completed successfully')
   } catch (error) {
     console.error('Error syncing files:', error)
     throw error
