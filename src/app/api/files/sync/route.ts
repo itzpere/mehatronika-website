@@ -8,7 +8,7 @@ export const preferredRegion = 'auto'
 export async function GET(_request: Request) {
   console.error('==== SYNC ENDPOINT CALLED ====')
 
-  const headersList = headers()
+  const headersList = await headers()
   const providedApiKey = headersList.get('x-api-key')
   console.error(`API Key check: ${!!providedApiKey} vs ${!!process.env.SYNC_API_KEY}`)
 
