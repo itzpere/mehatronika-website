@@ -10,7 +10,7 @@ export async function GET(_request: Request) {
 
   // Debug info - check actual values
   console.log('Provided API Key:', providedApiKey)
-  console.log('Environment API Key exists:', !!process.env.SYNC_API_KEY)
+  console.log('Environment API Key exists:', process.env.SYNC_API_KEY)
 
   // Security checks with more detailed errors
   if (!process.env.SYNC_API_KEY) {
@@ -24,16 +24,10 @@ export async function GET(_request: Request) {
     return NextResponse.json({ success: false, error: 'Invalid API key provided' }, { status: 401 })
   }
 
-  try {
-    await syncFilesFromWebDAV()
-    return NextResponse.json({ success: true })
-  } catch (error) {
+  syncFilesFromWebDAV().catch((error) => {
     console.error('Sync failed:', error)
-    return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 },
-    )
-  }
+  })
+  return NextResponse.json({ success: true })
 }
 
 export async function OPTIONS() {
