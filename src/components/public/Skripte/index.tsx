@@ -1,8 +1,9 @@
-import { BookOpen, Share2, Download, Users, Search, ArrowRight } from 'lucide-react'
+import { BookOpen, Download, Users, Search, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Counter from './Counter'
+import ShareButton from './ShareButton'
 
 export default async function Skripte() {
   const payload = await getPayload({
@@ -81,14 +82,7 @@ export default async function Skripte() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center pt-2 sm:pt-4">
-        <Link
-          href="/skripte/upload"
-          className="group inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary to-secondary px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:shadow-primary/20 active:scale-95 relative overflow-hidden"
-        >
-          <span className="relative z-10">Podeli svoje skripte</span>
-          <Share2 className="ml-2 h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-300 group-hover:translate-x-1 relative z-10" />
-          {/* gradient layers remain the same */}
-        </Link>
+        <ShareButton />
 
         <Link
           href="/skripte/"
