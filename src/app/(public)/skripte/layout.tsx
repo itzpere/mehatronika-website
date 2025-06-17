@@ -53,8 +53,10 @@ export default async function ScriptsLayout({ children }: { children: React.Reac
   const lockExpiry = lock?.lastSync ? new Date(new Date(lock.lastSync).getTime() + 5 * 60000) : null
 
   if (!lock?.isRunning || (lockExpiry && now > lockExpiry)) {
-    // Just start the sync and don't wait
-    syncFilesFromWebDAV()
+    // Start the sync in background but handle the promise properly
+    syncFilesFromWebDAV().catch((error) => {
+      console.error('Background sync failed:', error)
+    })
   }
 
   return (
