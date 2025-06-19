@@ -32,6 +32,7 @@ import { getLikeStatus } from '@/components/skripte/likes'
 //   DropdownMenuItem,
 //   DropdownMenuTrigger,
 // } from '@/components/ui/dropdown-menu'
+import { syncFolderOnDemand } from '@/hooks/webdav-sync-on-demand'
 import { auth } from '@/lib/auth/auth'
 import type { File as PayloadFile } from '@/payload-types'
 import Loading from './loading'
@@ -227,6 +228,16 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
         </div>
       )
     }
+
+    // Sync the folder content with WebDAV before displaying
+    try {
+      await syncFolderOnDemand(path)
+      // We don't need to do anything with the result, just ensure sync is completed
+    } catch (syncError) {
+      console.error(`Failed to sync folder ${path}:`, syncError)
+      // Continue with potentially stale data rather than failing the page load
+    }
+
     const content = await getContentsByPath(path)
     const { knownMdFiles, unknownMdFiles, regularFiles } = await processFiles(content.files)
     return (

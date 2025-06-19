@@ -1,13 +1,13 @@
-import { getPayload } from 'payload'
+// import { getPayload } from 'payload'
 import React from 'react'
 import '@/app/(public)/global.css'
 import { Header } from '@/components/layout/Header'
 import { AppSidebar } from '@/components/skripte/app-sidebar'
 import { BreadcrumbHeader } from '@/components/skripte/breadcrumbHeader'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import { syncFilesFromWebDAV } from '@/hooks/webdav-sync'
-import configPromise from '@payload-config'
-import type { Payload } from 'payload'
+// import { syncFilesFromWebDAV } from '@/hooks/webdav-sync'
+// import configPromise from '@payload-config'
+// import type { Payload } from 'payload'
 
 export const metadata = {
   title: 'Skripte',
@@ -19,45 +19,45 @@ export const metadata = {
   },
 }
 
-async function forceReleaseLockIfStale(payload: Payload): Promise<void> {
-  const lock = await payload.findGlobal({ slug: 'syncLock' })
-  console.log(lock)
-  if (lock?.isRunning && lock?.lastSync) {
-    const lockTimestamp = new Date(lock.lastSync).getTime()
-    const currentTime = Date.now()
-    // If lock is more than 5 minutes old, force release it
-    if (currentTime - lockTimestamp > 5 * 60 * 1000) {
-      console.log('Force releasing stale lock')
-      await payload.updateGlobal({
-        slug: 'syncLock',
-        data: { isRunning: false },
-      })
-    }
-  }
-}
+// async function forceReleaseLockIfStale(payload: Payload): Promise<void> {
+//   const lock = await payload.findGlobal({ slug: 'syncLock' })
+//   console.log(lock)
+//   if (lock?.isRunning && lock?.lastSync) {
+//     const lockTimestamp = new Date(lock.lastSync).getTime()
+//     const currentTime = Date.now()
+//     // If lock is more than 5 minutes old, force release it
+//     if (currentTime - lockTimestamp > 5 * 60 * 1000) {
+//       console.log('Force releasing stale lock')
+//       await payload.updateGlobal({
+//         slug: 'syncLock',
+//         data: { isRunning: false },
+//       })
+//     }
+//   }
+// }
 
 export default async function ScriptsLayout({ children }: { children: React.ReactNode }) {
-  const payload = await getPayload({
-    config: configPromise,
-  })
+  // const payload = await getPayload({
+  //   config: configPromise,
+  // })
 
-  // Only check for stale locks
-  await forceReleaseLockIfStale(payload)
+  // // Only check for stale locks
+  // await forceReleaseLockIfStale(payload)
 
-  // Check if sync should run (not running or expired)
-  const lock = await payload.findGlobal({
-    slug: 'syncLock',
-  })
+  // // Check if sync should run (not running or expired)
+  // const lock = await payload.findGlobal({
+  //   slug: 'syncLock',
+  // })
 
-  const now = new Date()
-  const lockExpiry = lock?.lastSync ? new Date(new Date(lock.lastSync).getTime() + 5 * 60000) : null
+  // const now = new Date()
+  // const lockExpiry = lock?.lastSync ? new Date(new Date(lock.lastSync).getTime() + 5 * 60000) : null
 
-  if (!lock?.isRunning || (lockExpiry && now > lockExpiry)) {
-    // Start the sync in background but handle the promise properly
-    syncFilesFromWebDAV().catch((error) => {
-      console.error('Background sync failed:', error)
-    })
-  }
+  // if (!lock?.isRunning || (lockExpiry && now > lockExpiry)) {
+  //   // Start the sync in background but handle the promise properly
+  //   syncFilesFromWebDAV().catch((error) => {
+  //     console.error('Background sync failed:', error)
+  //   })
+  // }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
