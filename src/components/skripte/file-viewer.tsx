@@ -27,15 +27,20 @@ export function FileViewer({ path, extension }: FileViewerProps) {
   const [error, setError] = useState<string | null>(null)
   const [markdown, setMarkdown] = useState('')
 
+  // Properly extract just the filename from the path
   const filename = path.split('/').pop() || ''
   const shareId = process.env.NEXT_PUBLIC_NEXTCLOUD_SHARE_ID
-  const cleanPath = path
-    .replace(/^\//, '')
-    .replace(/^Mehatronika\//, '')
-    .replace(new RegExp(`${filename}$`), '')
 
-  const fileUrl = `https://cloud.itzpere.com/s/${shareId}/download?path=/${encodeURIComponent(cleanPath)}/${filename}`
-  const mdUrl = `/api/markdown?path=${encodeURIComponent(cleanPath)}&filename=${filename}`
+  // Fix the path cleaning to avoid filename duplication
+  // Get the parent path without including the filename
+  const parentPath = path.substring(0, path.lastIndexOf('/'))
+  // Clean the parent path correctly
+  const cleanPath = parentPath.replace(/^\//, '').replace(/^Mehatronika\//, '')
+
+  // Construct full path properly
+  const fullPath = `/${cleanPath}/${filename}`
+  const fileUrl = `https://cloud.itzpere.com/s/${shareId}/download?path=${encodeURIComponent(fullPath)}`
+  const mdUrl = `/api/markdown?path=${encodeURIComponent(cleanPath)}&filename=${encodeURIComponent(filename)}`
 
   useEffect(() => {
     if (extension === 'md') {
@@ -108,7 +113,7 @@ export function FileViewer({ path, extension }: FileViewerProps) {
   )
 
   const renderPdfViewer = () => {
-    const pdfUrl = `/api/pdf?path=${encodeURIComponent(cleanPath)}&filename=${filename}`
+    const pdfUrl = `/api/pdf?path=${encodeURIComponent(cleanPath)}&filename=${encodeURIComponent(filename)}`
 
     return (
       <div className="container mx-auto p-4">
@@ -221,7 +226,7 @@ export function FileViewer({ path, extension }: FileViewerProps) {
       <a
         href={fileUrl}
         download
-        className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors shadow-sm"
+        className="inline-flex items-center gap-2 px-6 py-3 mt-12 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors shadow-sm"
       >
         <Download className="h-5 w-5" />
         Download {filename}

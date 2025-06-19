@@ -103,12 +103,14 @@ const FileListItem = async ({ file, path }: { file: PayloadFile; path: string })
   const { displayName, tags } = extractFileTags(fileName)
   const fileUrl = `/skripte/${path}/${encodeURIComponent(fileName)}`
   const shareId = process.env.NEXT_PUBLIC_NEXTCLOUD_SHARE_ID
-  const cleanPath = path
-    .replace(/^\//, '')
-    .replace(/^Mehatronika\//, '')
-    .replace(new RegExp(`${fileName}$`), '')
 
-  const downloadUrl = `https://cloud.itzpere.com/s/${shareId}/download?path=/${encodeURIComponent(cleanPath)}/${fileName}`
+  // Fix path construction to avoid duplication
+  // We don't need to remove filename from path here since it's not included
+  const cleanPath = path.replace(/^\//, '').replace(/^Mehatronika\//, '')
+
+  // Create full path properly
+  const fullPath = `/${cleanPath}/${fileName}`
+  const downloadUrl = `https://cloud.itzpere.com/s/${shareId}/download?path=${encodeURIComponent(fullPath)}`
   // Format date with time
   const formattedDate = file.lastModified
     ? new Date(file.lastModified).toLocaleString('sr-RS', {
