@@ -1,6 +1,14 @@
 'use client'
 
-import { ChevronLeft, ChevronRight, Download, ZoomIn, ZoomOut, RotateCw } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  ScrollText,
+} from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
@@ -26,6 +34,8 @@ export function FileViewer({ path, extension }: FileViewerProps) {
   const [scale, setScale] = useState<number>(1)
   const [error, setError] = useState<string | null>(null)
   const [markdown, setMarkdown] = useState('')
+  const [infiniteScroll, setInfiniteScroll] = useState<boolean>(true) // Default to infinite scroll
+  const [pageInputValue, setPageInputValue] = useState<string>('')
 
   // Properly extract just the filename from the path
   const filename = path.split('/').pop() || ''
@@ -115,36 +125,86 @@ export function FileViewer({ path, extension }: FileViewerProps) {
   const renderPdfViewer = () => {
     const pdfUrl = `/api/pdf?path=${encodeURIComponent(cleanPath)}&filename=${encodeURIComponent(filename)}`
 
+    const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPageInputValue(e.target.value)
+    }
+
+    const handlePageInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        const newPage = parseInt(pageInputValue, 10)
+        if (!isNaN(newPage) && newPage >= 1 && newPage <= numPages) {
+          if (infiniteScroll) {
+            // In infinite scroll mode, scroll to the page
+            const pageElement = document.getElementById(`page-${newPage}`)
+            if (pageElement) {
+              pageElement.scrollIntoView({ behavior: 'smooth' })
+            }
+          } else {
+            // In single page mode, just set the current page
+            setCurrentPage(newPage)
+          }
+          setPageInputValue('')
+        }
+      }
+    }
+
     return (
       <div className="container mx-auto p-4">
         <div className="sticky top-0 z-10 flex justify-between items-center p-2 mb-4 bg-background/80 backdrop-blur-sm rounded border">
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage <= 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm">
-              {currentPage} / {numPages || '?'}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.min(numPages, p + 1))}
-              disabled={currentPage >= numPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            {!infiniteScroll && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm">
+                  {currentPage} / {numPages || '?'}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(numPages, p + 1))}
+                  disabled={currentPage >= numPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+
+            {infiniteScroll && <span className="text-sm">{numPages} Strane</span>}
+
+            {/* Add the input field for both modes */}
+            <input
+              type="text"
+              placeholder={infiniteScroll ? 'Skoči na stranu' : 'Idi na stranu'}
+              value={pageInputValue}
+              onChange={handlePageInputChange}
+              onKeyDown={handlePageInputKeyDown}
+              className="w-24 h-8 px-2 text-xs border rounded focus:outline-none focus:ring-2 focus:ring-primary/50"
+              title="Upiši broj strane i pritisni Enter"
+            />
           </div>
 
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setInfiniteScroll(!infiniteScroll)}
+              title={infiniteScroll ? 'Prikaži po jednu stranu' : 'Prikaži sve stranice'}
+              className={infiniteScroll ? 'bg-muted' : ''}
+            >
+              <ScrollText className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setScale((s) => Math.max(0.5, s - 0.1))}
+              title="Zoom out"
             >
               <ZoomOut className="h-4 w-4" />
             </Button>
@@ -153,10 +213,11 @@ export function FileViewer({ path, extension }: FileViewerProps) {
               variant="outline"
               size="sm"
               onClick={() => setScale((s) => Math.min(2, s + 0.1))}
+              title="Zoom in"
             >
               <ZoomIn className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setScale(1)}>
+            <Button variant="outline" size="sm" onClick={() => setScale(1)} title="Reset zoom">
               <RotateCw className="h-4 w-4" />
             </Button>
           </div>
@@ -175,15 +236,33 @@ export function FileViewer({ path, extension }: FileViewerProps) {
           error={<ErrorUI message="Error loading PDF. Please try downloading instead." />}
           className="flex flex-col items-center"
         >
-          <Page
-            pageNumber={currentPage}
-            scale={scale}
-            width={Math.min(window.innerWidth - 40, 800)}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
-            loading={<div className="h-[800px] w-full animate-pulse bg-muted/50 rounded" />}
-            className="shadow-lg rounded-lg"
-          />
+          {infiniteScroll ? (
+            // Render all pages when in infinite scroll mode
+            Array.from(new Array(numPages), (_, index) => (
+              <div key={`page_${index + 1}`} id={`page-${index + 1}`} className="mb-8">
+                <Page
+                  pageNumber={index + 1}
+                  scale={scale}
+                  width={Math.min(window.innerWidth - 40, 800)}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  loading={<div className="h-[800px] w-full animate-pulse bg-muted/50 rounded" />}
+                  className="shadow-lg rounded-lg"
+                />
+              </div>
+            ))
+          ) : (
+            // Render only the current page when in single page mode
+            <Page
+              pageNumber={currentPage}
+              scale={scale}
+              width={Math.min(window.innerWidth - 40, 800)}
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+              loading={<div className="h-[800px] w-full animate-pulse bg-muted/50 rounded" />}
+              className="shadow-lg rounded-lg"
+            />
+          )}
         </Document>
       </div>
     )
